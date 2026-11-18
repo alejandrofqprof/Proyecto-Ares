@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto Ares - Entrenador Personal & Recomposición Corporal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { bg: '#F8FAFC', card: '#FFFFFF', red: '#DC2626', redDark: '#991B1B', gold: '#D97706', blue: '#2563EB', green: '#059669', purple: '#7C3AED' }
+                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], display: ['Outfit', 'Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #F8FAFC; color: #0F172A; font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Outfit', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        .glass-panel-light { background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(12px); }
+        .shadow-soft { box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03); }
+        .animate-pulse-fast { animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        @media print {
+            body { background-color: #FFFFFF !important; color: #0F172A !important; padding: 0 !important; margin: 0 !important; }
+            header, footer, #floating-workout-bar, #coach-banner, #toast-container, .no-print { display: none !important; }
+            main { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            .print-only-header { display: block !important; }
+            .shadow-soft { box-shadow: none !important; border: 1px solid #CBD5E1 !important; }
+            #print-report-modal { position: static !important; background: #FFFFFF !important; padding: 0 !important; overflow: visible !important; display: block !important; }
+            #print-report-content { box-shadow: none !important; border: none !important; max-width: 100% !important; padding: 0 !important; }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-red-600 selection:text-white pb-32 md:pb-24">
+
+    <!-- CABECERA EXCLUSIVA PARA IMPRESIÓN DIRECTA DE PESTAÑA -->
+    <div class="hidden print-only-header border-b-2 border-red-600 pb-3 mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="font-display font-extrabold text-2xl text-slate-900">PROYECTO ARES • INFORME DE ENTRENAMIENTO</h1>
+                <p class="text-xs text-slate-600">Recomposición Corporal & Planificación Científica (Desde 23 Nov 2026)</p>
+            </div>
+            <div class="text-right text-xs text-slate-500">
+                <p id="print-direct-date"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-40 glass-panel-light border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center shadow-md">
+                    <i data-lucide="swords" class="w-5 h-5 text-white"></i>
+                </div>
+                <span class="font-display font-extrabold text-lg tracking-wide text-slate-900">ARES PRO</span>
+            </div>
+
+            <nav class="flex items-center space-x-1 sm:space-x-2 bg-slate-100 p-1 rounded-xl border border-slate-200 overflow-x-auto">
+                <button onclick="switchTab('daily')" id="tab-daily" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center space-x-1.5 transition bg-red-600 text-white shadow-sm shrink-0">
+                    <i data-lucide="dumbbell" class="w-4 h-4"></i><span>Entreno</span>
+                </button>
+                <button onclick="switchTab('bank')" id="tab-bank" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center space-x-1.5 transition text-slate-600 hover:text-slate-900 shrink-0">
+                    <i data-lucide="layers" class="w-4 h-4"></i><span>Banco Pro</span>
+                </button>
+                <button onclick="switchTab('calendar')" id="tab-calendar" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center space-x-1.5 transition text-slate-600 hover:text-slate-900 shrink-0">
+                    <i data-lucide="calendar" class="w-4 h-4"></i><span>Calendario</span>
+                </button>
+                <button onclick="switchTab('metrics')" id="tab-metrics" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center space-x-1.5 transition text-slate-600 hover:text-slate-900 shrink-0">
+                    <i data-lucide="line-chart" class="w-4 h-4"></i><span>Métricas</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+
+        <!-- BANNER CON FRASES MOTIVADORAS DINÁMICAS POR DÍA -->
+        <div id="coach-banner" class="bg-gradient-to-r from-red-600 via-red-700 to-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-start space-x-3.5">
+                <div class="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/20">
+                    <i data-lucide="zap" class="w-6 h-6 text-amber-300"></i>
+                </div>
+                <div>
+                    <span id="daily-quote-category" class="text-xs font-bold uppercase tracking-widest text-amber-300">Inspiración Diaria</span>
+                    <h3 id="daily-quote-text" class="font-display font-extrabold text-base sm:text-lg leading-tight mt-0.5">"El dolor que sientes hoy será la fuerza que sientas mañana."</h3>
+                </div>
+            </div>
+            <button onclick="jumpToToday()" class="self-start md:self-center shrink-0 bg-white text-red-700 hover:bg-slate-100 px-4 py-2 rounded-xl text-xs font-bold shadow transition flex items-center space-x-1.5">
+                <i data-lucide="crosshair" class="w-4 h-4"></i><span>Ir a HOY</span>
+            </button>
+        </div>
+
+        <!-- ================= TAB 1: REGISTRO DIARIO ================= -->
+        <section id="view-daily" class="space-y-6">
+            <div class="bg-white border border-slate-200 shadow-soft rounded-2xl p-4 sm:p-5 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                    <div class="flex items-center space-x-3">
+                        <input type="date" id="daily-date-picker" min="2026-11-23" max="2027-01-31" onchange="onDateChanged(this.value)" class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-bold text-slate-900 focus:outline-none focus:border-red-600">
+                        <button onclick="navigateDay(-1)" class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-600"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                        <button onclick="navigateDay(1)" class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-600"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                    </div>
+                    <div id="session-status-tag" class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Pendiente</span>
+                    </div>
+                </div>
+
+                <!-- CRONÓMETRO GLOBAL ROBUSTO -->
+                <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-red-950 p-4 sm:p-5 rounded-xl text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-red-600/30 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0">
+                            <i data-lucide="timer" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Tiempo de Sesión</span>
+                            <div class="font-mono text-2xl sm:text-3xl font-extrabold tracking-wider text-white" id="global-timer-display">00:00:00</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3 bg-slate-950/60 p-3 rounded-xl border border-slate-700/60">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase text-slate-400 block">Descanso Óptimo Hipertrofia</span>
+                            <div class="flex items-center space-x-2 mt-0.5">
+                                <span class="font-mono text-xl font-bold text-amber-400" id="rest-timer-display">00:00</span>
+                                <span id="rest-indicator-badge" class="hidden text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded font-bold animate-pulse-fast">Descansando</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button onclick="toggleGlobalWorkout()" id="btn-toggle-workout" class="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-sm shadow-md transition flex items-center space-x-2">
+                            <i data-lucide="play" class="w-4 h-4"></i><span id="btn-toggle-workout-text">Comenzar</span>
+                        </button>
+                        <button onclick="resetGlobalWorkout()" class="p-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-xl" title="Reiniciar"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h2 class="text-xl font-bold font-display text-slate-900" id="daily-routine-title">Torso A</h2>
+                            <span id="daily-routine-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border">Torso</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1" id="daily-routine-desc">Enfoque hipertrofia</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="daily-exercises-list" class="space-y-4"></div>
+
+            <div class="bg-white border border-slate-200 shadow-soft rounded-2xl p-5 space-y-4">
+                <h3 class="font-bold font-display text-slate-900 text-base flex items-center space-x-2">
+                    <i data-lucide="footprints" class="w-5 h-5 text-red-600"></i><span>Cardio, Pasos & Notas</span>
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Pasos Diarios</label>
+                        <input type="number" id="daily-steps-input" placeholder="Ej: 9500" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-semibold text-slate-900 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kilocalorías</label>
+                        <input type="number" id="daily-calories-input" placeholder="Ej: 450" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-semibold text-slate-900 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Cardio LISS</label>
+                        <input type="text" id="daily-cardio-input" placeholder="Ej: 15 min cinta" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-semibold text-slate-900 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Notas Sensaciones</label>
+                    <textarea id="daily-notes-input" rows="2" placeholder="Notas..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-900 focus:outline-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2 no-print">
+                <button onclick="saveCurrentDaySession()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl shadow-md flex items-center justify-center space-x-2 transition">
+                    <i data-lucide="save" class="w-5 h-5"></i><span>Guardar Entrenamiento del Día</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: BANCO PRO ================= -->
+        <section id="view-bank" class="hidden space-y-6">
+            <div class="bg-white border border-slate-200 shadow-soft rounded-2xl p-5 space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold font-display text-slate-900 flex items-center space-x-2">
+                            <i data-lucide="layers" class="w-6 h-6 text-red-600"></i><span>Banco Pro Masivo (Hevy & RubFit)</span>
+                        </h2>
+                        <p class="text-xs text-slate-500">Catálogo ampliado con alternativas biomecánicas y opción de añadir ejercicios manualmente.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="openManualAddExerciseModal()" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow transition flex items-center space-x-1.5">
+                            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-400"></i><span>Añadir Ejercicio Manual</span>
+                        </button>
+                        <button onclick="openSmartRecommendationModal()" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center space-x-1.5">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i><span>Sugerir Rutina IA</span>
+                        </button>
+                        <button onclick="openCustomRoutineModal()" class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center space-x-1.5">
+                            <i data-lucide="folder-plus" class="w-4 h-4"></i><span>Crear Rutina</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtros del Banco -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="relative w-full sm:w-72">
+                        <input type="text" id="bank-search-input" oninput="filterExerciseBank()" placeholder="Buscar en el catálogo..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-semibold pl-9 focus:outline-none">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 w-full sm:w-auto" id="bank-category-filters">
+                        <button onclick="filterBankCategory('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-600 text-white transition">Todos</button>
+                        <button onclick="filterBankCategory('libre')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">Peso Libre</button>
+                        <button onclick="filterBankCategory('maquina')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">Máquinas</button>
+                        <button onclick="filterBankCategory('polea')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">Poleas</button>
+                        <button onclick="filterBankCategory('combinado')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">Dobles / Superseries</button>
+                    </div>
+                </div>
+
+                <div id="exercise-bank-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+                <div class="pt-6 border-t border-slate-100 space-y-3">
+                    <h3 class="font-display font-bold text-base text-slate-900">Mis Rutinas Creadas & Guardadas</h3>
+                    <div id="custom-routines-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: CALENDARIO ================= -->
+        <section id="view-calendar" class="hidden space-y-6">
+            <div class="bg-white border border-slate-200 shadow-soft rounded-2xl p-5 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold font-display text-slate-900">Planificación de Recomposición (Ares)</h2>
+                        <p class="text-xs text-slate-500">Haz clic en cualquier día (a partir del 23 de nov) para acceder al entreno o imprime el plan</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 no-print">
+                        <select id="calendar-month-selector" onchange="renderCalendarView()" class="bg-slate-50 border border-slate-200 text-slate-900 text-sm font-bold rounded-xl px-3.5 py-2 focus:outline-none">
+                            <option value="2026-11">Noviembre 2026</option>
+                            <option value="2026-12">Diciembre 2026</option>
+                            <option value="2027-01">Enero 2027</option>
+                        </select>
+                        <button onclick="printCalendarDirectly()" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition flex items-center space-x-1.5" title="Imprimir Calendario Actual">
+                            <i data-lucide="printer" class="w-4 h-4 text-amber-400"></i>
+                            <span>Imprimir Calendario</span>
+                        </button>
+                        <button onclick="openReportModal('monthly')" class="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition flex items-center space-x-1.5" title="Informe detallado de cargas del mes">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                            <span>Informe del Mes</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Leyenda visual completa -->
+                <div class="flex flex-wrap items-center gap-3 text-xs font-semibold">
+                    <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-md bg-red-600"></span><span class="text-slate-600">Torso A / Torso B</span></span>
+                    <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-md bg-amber-500"></span><span class="text-slate-600">Pierna Mantenimiento + Hombro</span></span>
+                    <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-md bg-blue-500"></span><span class="text-slate-600">Cardio Martes</span></span>
+                    <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-md bg-purple-600"></span><span class="text-slate-600">Bloque CrossFit</span></span>
+                    <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-md bg-slate-300"></span><span class="text-slate-600">Descanso</span></span>
+                    <span class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span><span class="text-emerald-700">Sesión Guardada</span></span>
+                </div>
+
+                <div id="calendar-grid-container" class="grid grid-cols-7 gap-2"></div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: MÉTRICAS ================= -->
+        <section id="view-metrics" class="hidden space-y-6">
+
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="printer" class="w-5 h-5 text-amber-400"></i>
+                        <h3 class="font-display font-bold text-base sm:text-lg text-white">Centro de Informes, Impresión y Descarga Libre</h3>
+                    </div>
+                    <p class="text-xs text-slate-300">Selecciona cualquier rango de fechas libremente para imprimir en PDF o descargar tu historial de progreso en archivo.</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    <button onclick="openReportModal('custom')" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold rounded-xl shadow-md transition flex items-center space-x-1.5">
+                        <i data-lucide="calendar-search" class="w-4 h-4"></i>
+                        <span>Seleccionar Días Libremente</span>
+                    </button>
+                    <button onclick="openReportModal('weekly')" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5">
+                        <i data-lucide="calendar-days" class="w-4 h-4 text-amber-300"></i>
+                        <span>Semanal</span>
+                    </button>
+                    <button onclick="openReportModal('monthly')" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5">
+                        <i data-lucide="calendar-range" class="w-4 h-4 text-red-400"></i>
+                        <span>Mensual</span>
+                    </button>
+                    <button onclick="openReportModal('full')" class="px-3.5 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center space-x-1.5">
+                        <i data-lucide="award" class="w-4 h-4 text-amber-200"></i>
+                        <span>Todo el Ciclo</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white border border-slate-200 shadow-soft rounded-2xl p-5 space-y-4 lg:col-span-1 no-print">
+                    <h3 class="font-bold font-display text-slate-900 text-base flex items-center space-x-2">
+                        <i data-lucide="ruler" class="w-5 h-5 text-red-600"></i>
+                        <span>Mediciones Antropométricas</span>
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha</label>
+                            <input type="date" id="metric-form-date" min="2026-11-23" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-900 focus:outline-none focus:border-red-600">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Peso (kg)</label>
+                                <input type="number" step="0.1" id="metric-form-weight" placeholder="Ej: 79.5" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-red-600">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-amber-700 mb-1">Cintura/Barriga (cm)</label>
+                                <input type="number" step="0.5" id="metric-form-waist" placeholder="Ej: 83.0" class="w-full bg-slate-50 border border-amber-300 rounded-xl px-3 py-2 text-xs font-bold text-amber-900 focus:outline-none focus:border-amber-600">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Pecho (cm)</label>
+                                <input type="number" step="0.5" id="metric-form-chest" placeholder="Ej: 104" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-red-600">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Espalda (cm)</label>
+                                <input type="number" step="0.5" id="metric-form-back" placeholder="Ej: 112" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-red-600">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Hombros (cm)</label>
+                                <input type="number" step="0.5" id="metric-form-shoulders" placeholder="Ej: 118" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-red-600">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Bíceps / Brazo (cm)</label>
+                                <input type="number" step="0.5" id="metric-form-biceps" placeholder="Ej: 38" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-red-600">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Antebrazo (cm)</label>
+                                <input type="number" step="0.5" id="metric-form-forearm" placeholder="Ej: 30" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-red-600">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Muslo / Cuádriceps (cm)</label>
+                                <input type="number" step="0.5" id="metric-form-thigh" placeholder="Ej: 60" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-red-600">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Gemelo (cm)</label>
+                                <input type="number" step="0.5" id="metric-form-calf" placeholder="Ej: 37" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-red-600">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Cadera / Glúteo (cm)</label>
+                                <input type="number" step="0.5" id="metric-form-hips" placeholder="Ej: 96" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-red-600">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Notas / Sensaciones Visuales</label>
+                            <input type="text" id="metric-form-notes" placeholder="Ej: Abdomen más definido, fuerza alta" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-red-600">
+                        </div>
+                        <button onclick="submitNewMetric()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-sm shadow transition flex items-center justify-center space-x-2">
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                            <span>Guardar Medidas</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-6 lg:col-span-2">
+                    <div class="bg-white border border-slate-200 shadow-soft rounded-2xl p-5 space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <h3 class="font-bold font-display text-slate-900 text-base flex items-center space-x-2">
+                                <i data-lucide="line-chart" class="w-5 h-5 text-red-600"></i>
+                                <span>Gráfico de Evolución Temporal</span>
+                            </h3>
+                            <div class="flex items-center space-x-2 no-print">
+                                <label class="text-xs font-bold text-slate-500">Ver Métrica:</label>
+                                <select id="chart-metric-selector" onchange="updateProgressChart()" class="bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-none">
+                                    <option value="waist">Cintura / Abdomen (cm)</option>
+                                    <option value="weight">Peso Corporal (kg)</option>
+                                    <option value="chest">Pecho (cm)</option>
+                                    <option value="back">Espalda (cm)</option>
+                                    <option value="shoulders">Hombros (cm)</option>
+                                    <option value="biceps">Bíceps / Brazo (cm)</option>
+                                    <option value="forearm">Antebrazo (cm)</option>
+                                    <option value="thigh">Muslo / Cuádriceps (cm)</option>
+                                    <option value="calf">Gemelo (cm)</option>
+                                    <option value="hips">Cadera / Glúteo (cm)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="h-64 w-full relative"><canvas id="progressChart"></canvas></div>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 shadow-soft rounded-2xl p-5 space-y-4">
+                        <h3 class="font-bold font-display text-slate-900 text-base">Historial Registrado</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-200 text-slate-500 uppercase font-bold">
+                                        <th class="py-2 px-2">Fecha</th>
+                                        <th class="py-2 px-2">Peso</th>
+                                        <th class="py-2 px-2 text-amber-700">Cintura</th>
+                                        <th class="py-2 px-2">Pecho</th>
+                                        <th class="py-2 px-2">Espalda</th>
+                                        <th class="py-2 px-2">Hombro</th>
+                                        <th class="py-2 px-2">Brazo</th>
+                                        <th class="py-2 px-2">Muslo</th>
+                                        <th class="py-2 px-2 text-right no-print">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="metrics-table-body" class="divide-y divide-slate-100 text-slate-900"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL DE VISTA PREVIA, IMPRESIÓN Y DESCARGA -->
+    <div id="print-report-modal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm overflow-y-auto p-4 sm:p-6 flex justify-center items-start">
+        <div id="print-report-content" class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 p-6 sm:p-8 space-y-6 my-auto">
+            
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-200 no-print">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-lg bg-red-100 text-red-700 text-xs font-extrabold uppercase">Informe & Exportación</span>
+                    <div id="report-period-controls" class="flex flex-wrap items-center gap-2"></div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="downloadReportFile()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center space-x-1.5">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Descargar Archivo</span>
+                    </button>
+                    <button onclick="executeReportPrint()" class="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center space-x-1.5">
+                        <i data-lucide="printer" class="w-4 h-4"></i>
+                        <span>Imprimir / PDF</span>
+                    </button>
+                    <button onclick="closeReportModal()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="report-body-container" class="space-y-6"></div>
+
+        </div>
+    </div>
+
+    <!-- MODAL AÑADIR EJERCICIO MANUAL -->
+    <div id="manual-exercise-modal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm p-4 flex justify-center items-center">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b pb-2">
+                <h3 class="font-bold text-base text-slate-900 flex items-center space-x-2"><i data-lucide="plus-circle" class="w-5 h-5 text-red-600"></i><span>Añadir Ejercicio Manualmente al Banco</span></h3>
+                <button onclick="closeManualAddExerciseModal()"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Nombre del Ejercicio</label>
+                    <input type="text" id="manual-ex-name" placeholder="Ej: Press Declinado con Mancuernas" class="w-full bg-slate-50 border rounded-xl px-3 py-2 font-semibold">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Categoría</label>
+                        <select id="manual-ex-cat" class="w-full bg-slate-50 border rounded-xl px-3 py-2 font-semibold">
+                            <option value="libre">Peso Libre</option>
+                            <option value="maquina">Máquina</option>
+                            <option value="polea">Polea</option>
+                            <option value="combinado">Doble / Superserie</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Grupo Muscular / Foco</label>
+                        <input type="text" id="manual-ex-target" placeholder="Ej: Pectoral Inferior" class="w-full bg-slate-50 border rounded-xl px-3 py-2 font-semibold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Consejo Técnico / Ejecución</label>
+                    <input type="text" id="manual-ex-tip" placeholder="Ej: Inclinación negativa de 15º..." class="w-full bg-slate-50 border rounded-xl px-3 py-2 font-semibold">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Alternativas (separadas por comas)</label>
+                    <input type="text" id="manual-ex-alts" placeholder="Ej: Press plano, Dips en paralelas" class="w-full bg-slate-50 border rounded-xl px-3 py-2 font-semibold">
+                </div>
+                <button onclick="saveManualExercise()" class="w-full py-3 bg-red-600 text-white font-bold rounded-xl text-sm shadow">Guardar Ejercicio en el Banco</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ALTERNATIVAS CON SELECCIÓN INTERACTIVA -->
+    <div id="exercise-alternatives-modal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm p-4 flex justify-center items-center">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 space-y-4 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between border-b pb-3">
+                <div>
+                    <span class="text-[10px] font-extrabold text-red-600 uppercase tracking-wider">Alternativas Biomecánicas</span>
+                    <h3 id="alt-modal-title" class="font-bold text-sm sm:text-base text-slate-900 mt-0.5">Seleccionar Variante</h3>
+                </div>
+                <button onclick="closeAlternativesModal()" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <p class="text-xs text-slate-500">Haz clic en cualquiera de las siguientes opciones para sustituir el ejercicio en tu rutina y registrar tus series al instante:</p>
+            <div id="alt-modal-content" class="space-y-2.5 max-h-72 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- MODAL SUGERENCIA IA -->
+    <div id="smart-recommendation-modal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm p-4 flex justify-center items-center">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b pb-2">
+                <h3 class="font-bold text-base text-slate-900 flex items-center space-x-2"><i data-lucide="sparkles" class="w-5 h-5 text-amber-500"></i><span>Sugerencia de Entrenador IA</span></h3>
+                <button onclick="closeSmartRecommendationModal()"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div id="smart-recommendation-body" class="space-y-3 text-xs text-slate-700"></div>
+        </div>
+    </div>
+
+    <!-- MODAL CREAR RUTINA -->
+    <div id="custom-routine-modal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm p-4 flex justify-center items-center">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b pb-2">
+                <h3 class="font-bold text-base text-slate-900">Diseñar Nueva Rutina</h3>
+                <button onclick="closeCustomRoutineModal()"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="space-y-3">
+                <input type="text" id="new-routine-title" placeholder="Nombre de la rutina" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold">
+                <input type="text" id="new-routine-desc" placeholder="Descripción corta" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
+                <div id="modal-bank-selection-list" class="max-h-60 overflow-y-auto space-y-2 border rounded-xl p-3 bg-slate-50"></div>
+                <button onclick="saveCustomRoutine()" class="w-full py-3 bg-red-600 text-white font-bold rounded-xl text-sm">Guardar Rutina</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CRONÓMETRO FLOTANTE -->
+    <div id="floating-workout-bar" class="fixed bottom-0 left-0 right-0 z-40 glass-panel-light border-t border-slate-200 px-4 py-3 no-print">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <span class="text-xs font-extrabold uppercase text-slate-700">Sesión Ares: <span class="font-mono text-lg font-black text-slate-900" id="floating-global-timer">00:00:00</span></span>
+                <span class="text-xs font-bold text-amber-600">Descanso: <span class="font-mono text-base font-bold text-amber-700" id="floating-rest-timer">00:00</span></span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="toggleGlobalWorkout()" id="floating-btn-toggle" class="px-4 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg"><span id="floating-btn-text">Comenzar</span></button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="border-t py-4 bg-white mt-auto mb-16 text-center text-xs text-slate-500 no-print">
+        <p>Proyecto Ares Pro • Banco Hevy & RubFit Masivo Integrado</p>
+    </footer>
+
+    <div id="toast-container" class="fixed bottom-20 right-5 z-50 flex flex-col space-y-2 pointer-events-none no-print"></div>
+
+    <!-- SCRIPT -->
+    <script>
+        // FRASES MOTIVADORAS DINÁMICAS POR DÍA DE LA SEMANA
+        const motivationalQuotes = [
+            { category: "Domingo de Enfoque", text: "\"Descansa, recarga y prepárate para dominar otra semana de triunfos.\"" },
+            { category: "Lunes de Fuego", text: "\"Empieza la semana con determinación absoluta. ¡El Olimpo te espera!\"" },
+            { category: "Martes de Progreso", text: "\"Cada repetición cuenta una historia de disciplina y constancia inquebrantable.\"" },
+            { category: "Miércoles de Crecimiento", text: "\"El esfuerzo de hoy es el músculo y la fuerza de mañana. ¡Sigue empujando!\"" },
+            { category: "Jueves de Resistencia", text: "\"No cuentes los días, haz que los días cuenten con cada serie pesada.\"" },
+            { category: "Viernes de Campeones", text: "\"El éxito no se da, se conquista serie a serie. ¡Termina la semana fuerte!\"" },
+            { category: "Sábado de Superación", text: "\"Tu único límite eres tú mismo. ¡A por todas sin excusas!\"" }
+        ];
+
+        function updateDailyBanner() {
+            const now = new Date();
+            const dayOfWeek = now.getDay(); // 0 al 6
+            const quote = motivationalQuotes[dayOfWeek] || motivationalQuotes[1];
+            const catEl = document.getElementById('daily-quote-category');
+            const textEl = document.getElementById('daily-quote-text');
+            if (catEl && textEl) {
+                catEl.innerText = quote.category;
+                textEl.innerText = quote.text;
+            }
+        }
+
+        let EXERCISE_BANK = [
+            { id: 'pressInclinado', name: 'Press Inclinado Mancuernas (30º)', category: 'libre', target: 'Pectoral Superior', tip: 'Banco a 30º, baja controlado 3s.', alternatives: ['Press Inclinado Multipower', 'Press Inclinado con Barra', 'Aperturas Inclinadas en Polea'] },
+            { id: 'pressBanca', name: 'Press Banca Plano con Barra', category: 'libre', target: 'Pectoral Global', tip: 'Pies firmes, escápulas retraídas.', alternatives: ['Press Plano con Mancuernas', 'Press en Máquina Articulada', 'Flexiones Lastradas'] },
+            { id: 'pressDeclinado', name: 'Press Declinado con Barra / Mancuernas', category: 'libre', target: 'Pectoral Inferior', tip: 'Retrae escápulas y empuja vertical.', alternatives: ['Fondos en Paralelas (Dips)', 'Cruces de Polea de Arriba a Abajo'] },
+            { id: 'contractorPecho', name: 'Contractor de Pecho (Peck Deck)', category: 'maquina', target: 'Aislamiento Pectoral', tip: 'Codos ligeramente flexionados, aprieta al centro.', alternatives: ['Cruces en Polea Alta', 'Aperturas Planas con Mancuernas'] },
+            { id: 'pressConvergentePecho', name: 'Press de Pecho en Máquina Convergente', category: 'maquina', target: 'Pectoral Global', tip: 'Alinea las manillas con la mitad del pecho.', alternatives: ['Press Banca con Barra', 'Press Plano Mancuernas'] },
+            { id: 'crucesPolea', name: 'Cruces en Polea Alta', category: 'polea', target: 'Pectoral Aislamiento', tip: 'Codos fijos, cruza ligeramente las manos.', alternatives: ['Peck Deck', 'Aperturas Inclinadas'] },
+            { id: 'jalonPecho', name: 'Jalón al Pecho Agarre Neutro', category: 'polea', target: 'Dorsal Ancho', tip: 'Saca pecho, codos hacia las costillas.', alternatives: ['Dominadas asistidas / Lastradas', 'Jalón Agarre Prono', 'Remo en Máquina Convergente'] },
+            { id: 'dominadas', name: 'Dominadas Libres (Pull-ups)', category: 'libre', target: 'Anchura de Espalda', tip: 'Deprime escápulas, sube el pecho a la barra.', alternatives: ['Jalón al Pecho', 'Jalón Supino'] },
+            { id: 'remoBanco', name: 'Remo Apoyado en Banco Mancuernas', category: 'libre', target: 'Espalda Densidad', tip: 'Evita balanceo lumbar.', alternatives: ['Remo en T con Soporte', 'Remo Gironda en Polea', 'Remo con Barra'] },
+            { id: 'remoPolea', name: 'Remo Unilateral en Polea Baja', category: 'polea', target: 'Dorsal Unilateral', tip: 'Aisla la porción baja del dorsal.', alternatives: ['Remo con Mancuerna a 1 Mano', 'Remo en Máquina Articulada'] },
+            { id: 'remoBarraT', name: 'Remo en Barra T (T-Bar Row)', category: 'libre', target: 'Espalda Media y Grosor', tip: 'Espalda neutra, tira hacia el ombligo.', alternatives: ['Remo con Barra Pendlay', 'Remo Gironda'] },
+            { id: 'pulldownBrazoEstirado', name: 'Pulldown de Dorsal con Brazos Estirados', category: 'polea', target: 'Dorsal Ancho (Aislamiento)', tip: 'Sin flexionar codos, lleva la barra a los muslos.', alternatives: ['Dominadas en barra recta', 'Jalón supino estricto'] },
+            { id: 'pressMilitar', name: 'Press Militar Sentado con Mancuernas', category: 'libre', target: 'Hombros / Deltoides Anterior', tip: 'Vertical sin arquear lumbar.', alternatives: ['Press Arnold', 'Press en Máquina de Hombros', 'Press Militar con Barra'] },
+            { id: 'elevacionesLaterales', name: 'Elevaciones Laterales con Mancuerna / Polea', category: 'libre', target: 'Deltoides Lateral', tip: 'Lidera con los codos.', alternatives: ['Elevaciones Laterales en Máquina', 'Elevaciones en Polea por Detrás'] },
+            { id: 'pajaros', name: 'Pájaros / Deltoides Posterior', category: 'libre', target: 'Deltoides Posterior', tip: 'Abre hacia fuera.', alternatives: ['Contractor Inverso (Peck Deck)', 'Face Pulls en Polea Alta', 'Pájaros en Polea Baja'] },
+            { id: 'facePull', name: 'Face Pull en Polea Alta con Cuerda', category: 'polea', target: 'Manguito Rotador / Trapecio Alto', tip: 'Rota externamente al final.', alternatives: ['Pájaros en Máquina', 'Remo al Mentón con Polea'] },
+            { id: 'elevacionesFrontales', name: 'Elevaciones Frontales con Disco / Mancuerna', category: 'libre', target: 'Deltoides Anterior', tip: 'Controla la bajada sin inercia.', alternatives: ['Press Militar', 'Elevaciones en Polea Baja'] },
+            { id: 'curlBarraZ', name: 'Curl de Bíceps con Barra Z', category: 'libre', target: 'Bíceps Global', tip: 'Codos pegados al costado, sin balanceo.', alternatives: ['Curl con Mancuernas de Pie', 'Curl en Banco Scott'] },
+            { id: 'curlMartillo', name: 'Curl Tipo Martillo con Mancuernas', category: 'libre', target: 'Braquial & Braquiorradial', tip: 'Agarre neutro firme.', alternatives: ['Curl con Barra en Pronación', 'Curl en Polea con Cuerda'] },
+            { id: 'curlInclinado', name: 'Curl de Bíceps en Banco Inclinado', category: 'libre', target: 'Bíceps (Cabeza Larga)', tip: 'Deja caer los brazos atrás para estirar.', alternatives: ['Curl en Banco Scott', 'Curl de pie con mancuernas'] },
+            { id: 'tricepsKatana', name: 'Tríceps Katana / Extensión en Polea Alta', category: 'polea', target: 'Tríceps (Cabeza Larga)', tip: 'Codos fijos apuntando al frente o arriba.', alternatives: ['Press Francés con Barra Z', 'Extensiones tras nuca con mancuerna'] },
+            { id: 'pressFrances', name: 'Press Francés con Mancuernas / Barra Z', category: 'libre', target: 'Tríceps Global', tip: 'Baja hacia la frente o detrás de la cabeza.', alternatives: ['Extensiones de Tríceps en Polea', 'Fondos en Paralelas'] },
+            { id: 'extensionTricepsCuerda', name: 'Extensiones de Tríceps en Polea con Cuerda', category: 'polea', target: 'Tríceps Lateral y Medial', tip: 'Abre la cuerda al final del recorrido.', alternatives: ['Extensión con barra recta', 'Patada de triceps con mancuerna'] },
+            { id: 'sentadillaLibre', name: 'Sentadilla Libre con Barra (Squat)', category: 'libre', target: 'Cuádriceps y Glúteos', tip: 'Rompe los 90º con abdomen firme.', alternatives: ['Prensa Inclinada', 'Hack Squat en Máquina', 'Sentadilla Goblet'] },
+            { id: 'prensaPiernas', name: 'Prensa de Piernas Inclinada', category: 'maquina', target: 'Cuádriceps', tip: 'Colocación media de pies, baja controlado.', alternatives: ['Sentadilla Libre', 'Sentadilla en Multipower'] },
+            { id: 'pesoMuertoRumano', name: 'Peso Muerto Rumano', category: 'libre', target: 'Cadena Posterior (Isquios y Glúteo)', tip: 'Cadera atrás, estiramiento profundo.', alternatives: ['Peso Muerto Convencional', 'Hip Thrust', 'Buenos Días'] },
+            { id: 'curlFemoralSentado', name: 'Curl Femoral Sentado en Máquina', category: 'maquina', target: 'Isquiosurales', tip: 'Rodillo ajustado sobre los talones.', alternatives: ['Curl Femoral Tumbado', 'Curl Femoral Nórdico'] },
+            { id: 'extensionesCuriceps', name: 'Extensiones de Cuádriceps en Máquina', category: 'maquina', target: 'Cuádriceps (Aislamiento)', tip: 'Contrae 1 segundo arriba en extensión completa.', alternatives: ['Zancadas con Mancuernas', 'Sentadilla Búlgara'] },
+            { id: 'hipThrust', name: 'Hip Thrust con Barra / Máquina', category: 'libre', target: 'Glúteos', tip: 'Apoyo escapular firme, retroversión pélvica arriba.', alternatives: ['Peso Muerto Rumano', 'Patada de glúteo en polea'] },
+            { id: 'elevacionTalones', name: 'Elevación de Gemelos en Máquina / Prensa', category: 'maquina', target: 'Gemelos (Gastrocnecmio y Sóleo)', tip: 'Rango de movimiento completo, pausa abajo.', alternatives: ['Gemelos de pie con mancuerna', 'Gemelos sentado en máquina'] },
+            { id: 'brazosSuperserie', name: 'Superserie Brazos (Tríceps Katana + Curl Inclinado)', category: 'combinado', target: 'Bíceps & Tríceps', tip: 'Superserie continua sin descanso intermedio.', isDouble: true, subExercises: ['Tríceps Katana en Polea', 'Curl con Mancuernas in Banco Inclinado'], alternatives: ['Superserie Pushdown Cuerda + Curl Martillo'] },
+            { id: 'superseriePechoEspalda', name: 'Superserie Antagonista (Press Inclinado + Remo Polea)', category: 'combinado', target: 'Torso Completo', tip: 'Combina empuje horizontal/inclinado con tracción.', isDouble: true, subExercises: ['Press Inclinado con Mancuernas', 'Remo en Polea Baja'], alternatives: ['Superserie Press Plano + Jalón al Pecho'] },
+            { id: 'abdomen', name: 'Crunch Polea Alta + Elevación Piernas', category: 'combinado', target: 'Abdomen / Core', tip: 'Superserie de trabajo abdominal intenso.', isDouble: true, subExercises: ['Crunch en Polea Alta', 'Elevación de Piernas Colgado'], alternatives: ['Rueda Abdominal + Plancha'] }
+        ];
+
+        const ROUTINES_BASE = {
+            torsoA: {
+                id: 'torsoA', title: 'Torso A - Pecho Inclinado & Espalda Densidad', desc: 'Foco clavicular superior y espalda gruesa.', badge: 'Torso A', badgeStyle: 'bg-red-100 text-red-700 border-red-200',
+                exercises: [
+                    { name: 'Press Inclinado Mancuernas (30º)', baseSets: 3, baseReps: '8-10', baseRir: 'RIR 1-2', restSecs: 180, note: 'Compuesto pesado' },
+                    { name: 'Jalón al Pecho Agarre Neutro', baseSets: 3, baseReps: '8-10', baseRir: 'RIR 1-2', restSecs: 120, note: 'Tracción vertical' },
+                    { name: 'Press Banca Plano con Barra', baseSets: 3, baseReps: '6-8', baseRir: 'RIR 2', restSecs: 180, note: 'Fuerza base' },
+                    { name: 'Remo Apoyado en Banco Mancuernas', baseSets: 3, baseReps: '8-10', baseRir: 'RIR 1-2', restSecs: 120, note: 'Espalda densidad' },
+                    { name: 'Elevaciones Laterales con Mancuerna / Polea', baseSets: 4, baseReps: '12-15', baseRir: 'RIR 1', restSecs: 90, note: 'Deltoides' }
+                ]
+            },
+            cardio: {
+                id: 'cardio', title: 'Martes: Cardio Activador & Movilidad', desc: 'Gasto calórico aeróbico.', badge: 'Cardio Martes', badgeStyle: 'bg-blue-100 text-blue-700 border-blue-200',
+                exercises: [{ name: 'Sesión Aeróbica Principal (Andar / Baile / LISS)', baseSets: 1, baseReps: '45 min', baseRir: 'Zona 2', restSecs: 60, note: 'Ritmo constante' }]
+            },
+            torsoB: {
+                id: 'torsoB', title: 'Torso B - Anchura Espalda & Arm Builder', desc: 'Dorsal ancho y congestión de brazos.', badge: 'Torso B', badgeStyle: 'bg-red-100 text-red-700 border-red-200',
+                exercises: [
+                    { name: 'Remo Unilateral en Polea Baja', baseSets: 3, baseReps: '10-12', baseRir: 'RIR 1', restSecs: 120, note: 'Dorsal ancho' },
+                    { name: 'Cruces en Polea Alta', baseSets: 3, baseReps: '10-12', baseRir: 'RIR 1', restSecs: 90, note: 'Aislamiento pectoral' },
+                    { name: 'Pájaros / Deltoides Posterior', baseSets: 3, baseReps: '12-15', baseRir: 'RIR 1', restSecs: 90, note: 'Deltoides posterior' },
+                    { name: 'Superserie Brazos (Tríceps Katana + Curl Inclinado)', baseSets: 3, baseReps: '10-12', baseRir: 'RIR 1', restSecs: 120, note: 'Superserie brazos', isDouble: true, subExercises: ['Tríceps Katana en Polea', 'Curl con Mancuernas en Banco Inclinado'] }
+                ]
+            },
+            piernaHombro: {
+                id: 'piernaHombro', title: 'Jueves: Pierna Mantenimiento + Hombro & Core', desc: 'Sesión extensa.', badge: 'Pierna & Hombro', badgeStyle: 'bg-amber-100 text-amber-800 border-amber-200',
+                exercises: [
+                    { name: 'Prensa de Piernas Inclinada', baseSets: 2, baseReps: '8-10', baseRir: 'RIR 2', restSecs: 180, note: 'Cuádriceps' },
+                    { name: 'Peso Muerto Rumano', baseSets: 2, baseReps: '8-10', baseRir: 'RIR 1-2', restSecs: 180, note: 'Cadena posterior' },
+                    { name: 'Press Militar Sentado con Mancuernas', baseSets: 3, baseReps: '8-10', baseRir: 'RIR 1-2', restSecs: 150, note: 'Hombro' },
+                    { name: 'Elevaciones Laterales con Mancuerna / Polea', baseSets: 4, baseReps: '12-15', baseRir: 'RIR 1', restSecs: 90, note: 'Lateral' },
+                    { name: 'Crunch Polea Alta + Elevación Piernas', baseSets: 4, baseReps: '12-15', baseRir: 'RIR 1', restSecs: 90, note: 'Superserie core', isDouble: true, subExercises: ['Crunch en Polea Alta', 'Elevación de Piernas Colgado'] }
+                ]
+            },
+            crossfit: { id: 'crossfit', title: 'Fase CrossFit', desc: 'WOD metabólico.', badge: 'CrossFit', badgeStyle: 'bg-purple-100 text-purple-700 border-purple-200', exercises: [] },
+            rest: { id: 'rest', title: 'Descanso Activo', desc: 'Pasos NEAT.', badge: 'Descanso', badgeStyle: 'bg-slate-100 text-slate-600 border-slate-200', exercises: [{ name: 'Pasos Diarios NEAT', baseSets: 1, baseReps: '10.000', baseRir: 'Ligero', restSecs: 0, note: 'Actividad diaria' }] }
+        };
+
+        const STORAGE_KEY_WORKOUTS = 'ares_workouts_v10';
+        const STORAGE_KEY_METRICS = 'ares_metrics_v10';
+        const STORAGE_KEY_CUSTOM_ROUTINES = 'ares_custom_routines_v4';
+        const STORAGE_KEY_USER_BANK = 'ares_user_bank_v2';
+
+        let currentActiveDate = '2026-11-23';
+        let isWorkoutRunning = false;
+        let globalTimerStartTimestamp = 0;
+        let globalTimerElapsedBeforePause = 0;
+        let globalTimerInterval = null;
+
+        let restTimerTargetTimestamp = 0;
+        let restTimerInterval = null;
+        let restTimerSecondsRemaining = 0;
+        let progressChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadUserCustomBank();
+            updateDailyBanner();
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            currentActiveDate = (todayStr >= '2026-11-23' && todayStr <= '2027-01-31') ? todayStr : '2026-11-23';
+            document.getElementById('daily-date-picker').value = currentActiveDate;
+            document.getElementById('metric-form-date').value = currentActiveDate;
+
+            loadDailyView(currentActiveDate);
+            renderExerciseBank();
+            renderCustomRoutines();
+            renderMetricsTable();
+            renderCalendarView();
+            initChart();
+
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    if (isWorkoutRunning) updateGlobalTimerDisplay();
+                    if (restTimerTargetTimestamp > 0) {
+                        const remaining = Math.round((restTimerTargetTimestamp - Date.now()) / 1000);
+                        if (remaining <= 0) finishRestTimer();
+                        else { restTimerSecondsRemaining = remaining; updateRestTimerDisplays(); }
+                    }
+                }
+            });
+        });
+
+        function loadUserCustomBank() {
+            const raw = localStorage.getItem(STORAGE_KEY_USER_BANK);
+            if (raw) {
+                try {
+                    const customList = JSON.parse(raw);
+                    EXERCISE_BANK = [...EXERCISE_BANK, ...customList];
+                } catch(e) {}
+            }
+        }
+
+        function jumpToToday() {
+            currentActiveDate = '2026-11-23';
+            document.getElementById('daily-date-picker').value = currentActiveDate;
+            loadDailyView(currentActiveDate);
+            switchTab('daily');
+        }
+
+        function switchTab(tabId) {
+            ['daily', 'bank', 'calendar', 'metrics'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-${t}`);
+                if (btn) {
+                    btn.className = (t === tabId)
+                        ? "px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center space-x-1.5 transition bg-red-600 text-white shadow-sm shrink-0"
+                        : "px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center space-x-1.5 transition text-slate-600 hover:text-slate-900 shrink-0";
+                }
+            });
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            if (tabId === 'calendar') renderCalendarView();
+            if (tabId === 'bank') { renderExerciseBank(); renderCustomRoutines(); }
+            if (tabId === 'metrics') { renderMetricsTable(); setTimeout(updateProgressChart, 100); }
+        }
+
+        function getRoutineForDate(dateStr) {
+            const dateObj = new Date(dateStr + 'T00:00:00');
+            const dayOfWeek = dateObj.getDay();
+            const year = dateObj.getFullYear();
+            const month = dateObj.getMonth();
+            const day = dateObj.getDate();
+            const isCrossfit = (year === 2026 && month === 11 && day >= 22) || (year === 2027 && month === 0 && day <= 10);
+            if (isCrossfit) return (dayOfWeek === 0 || dayOfWeek === 6) ? ROUTINES_BASE.rest : ROUTINES_BASE.crossfit;
+
+            switch(dayOfWeek) {
+                case 1: return ROUTINES_BASE.torsoA;
+                case 2: return ROUTINES_BASE.cardio;
+                case 3: return ROUTINES_BASE.torsoB;
+                case 4: return ROUTINES_BASE.piernaHombro;
+                default: return ROUTINES_BASE.rest;
+            }
+        }
+
+        function onDateChanged(newDateStr) {
+            currentActiveDate = newDateStr;
+            loadDailyView(currentActiveDate);
+        }
+
+        function navigateDay(offset) {
+            const parts = currentActiveDate.split('-');
+            const currDate = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2])));
+            currDate.setUTCDate(currDate.getUTCDate() + offset);
+            const newDateStr = currDate.toISOString().split('T')[0];
+            if (newDateStr >= '2026-11-23' && newDateStr <= '2027-01-31') {
+                currentActiveDate = newDateStr;
+                document.getElementById('daily-date-picker').value = currentActiveDate;
+                loadDailyView(currentActiveDate);
+            }
+        }
+
+        function loadDailyView(dateStr) {
+            const routine = getRoutineForDate(dateStr);
+            const savedSession = getSavedSession(dateStr);
+
+            document.getElementById('daily-routine-title').innerText = routine.title;
+            document.getElementById('daily-routine-desc').innerText = routine.desc;
+            
+            const badgeEl = document.getElementById('daily-routine-badge');
+            badgeEl.innerText = routine.badge;
+            badgeEl.className = `px-2.5 py-0.5 rounded-full text-xs font-semibold border ${routine.badgeStyle}`;
+
+            const statusTag = document.getElementById('session-status-tag');
+            statusTag.innerHTML = savedSession ? `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-emerald-700 font-semibold">Guardado</span>` : `<span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Pendiente</span>`;
+
+            let exercisesList = (savedSession && savedSession.exercisesDefinition) ? savedSession.exercisesDefinition : routine.exercises;
+            const container = document.getElementById('daily-exercises-list');
+            container.innerHTML = '';
+
+            exercisesList.forEach((ex, exIdx) => {
+                const exSaved = (savedSession && savedSession.exercises && savedSession.exercises[exIdx]) ? savedSession.exercises[exIdx] : null;
+                const totalSets = ex.baseSets || 3;
+                const exCard = document.createElement('div');
+                exCard.className = "bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-soft space-y-3";
+
+                let reorderHtml = `
+                    <div class="flex items-center space-x-1 no-print">
+                        <button onclick="moveExercise(${exIdx}, -1)" class="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600" title="Subir"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="moveExercise(${exIdx}, 1)" class="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600" title="Bajar"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="showAlternatives(${exIdx}, '${ex.name}')" class="px-2 py-0.5 bg-amber-50 border border-amber-200 rounded text-[10px] font-bold text-amber-700 hover:bg-amber-100 transition flex items-center space-x-1">
+                            <i data-lucide="git-branch" class="w-3 h-3"></i><span>Alternativas</span>
+                        </button>
+                    </div>
+                `;
+
+                let setsHtml = '';
+                if (ex.isDouble && ex.subExercises) {
+                    for (let s = 0; s < totalSets; s++) {
+                        const setSaved = (exSaved && exSaved.setsData && exSaved.setsData[s]) ? exSaved.setsData[s] : { sub1Weight: '', sub1Reps: '', sub2Weight: '', sub2Reps: '', done: false };
+                        setsHtml += `
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2 text-xs">
+                                <div class="flex items-center justify-between font-bold text-slate-700">
+                                    <span>Serie ${s + 1} (Superserie)</span>
+                                    <button onclick="triggerSetComplete(this, ${ex.restSecs || 120})" class="no-print px-2 py-1 rounded font-bold border transition ${setSaved.done ? 'bg-red-600 border-red-600 text-white' : 'bg-white border-slate-200 text-slate-600'}">
+                                        ${setSaved.done ? 'Completada' : 'Terminar'}
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div class="bg-white p-2 rounded-lg border border-slate-200 space-y-1">
+                                        <span class="text-[10px] font-bold text-red-600 block">${ex.subExercises[0]}</span>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="number" step="0.5" placeholder="kg" value="${setSaved.sub1Weight}" data-ex="${exIdx}" data-set="${s}" data-sub="1" data-field="weight" class="w-1/2 bg-slate-50 px-2 py-1 rounded text-center font-bold">
+                                            <input type="text" placeholder="reps" value="${setSaved.sub1Reps}" data-ex="${exIdx}" data-set="${s}" data-sub="1" data-field="reps" class="w-1/2 bg-slate-50 px-2 py-1 rounded text-center font-bold">
+                                        </div>
+                                    </div>
+                                    <div class="bg-white p-2 rounded-lg border border-slate-200 space-y-1">
+                                        <span class="text-[10px] font-bold text-amber-700 block">${ex.subExercises[1]}</span>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="number" step="0.5" placeholder="kg" value="${setSaved.sub2Weight}" data-ex="${exIdx}" data-set="${s}" data-sub="2" data-field="weight" class="w-1/2 bg-slate-50 px-2 py-1 rounded text-center font-bold">
+                                            <input type="text" placeholder="reps" value="${setSaved.sub2Reps}" data-ex="${exIdx}" data-set="${s}" data-sub="2" data-field="reps" class="w-1/2 bg-slate-50 px-2 py-1 rounded text-center font-bold">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    for (let s = 0; s < totalSets; s++) {
+                        const setSaved = (exSaved && exSaved.setsData && exSaved.setsData[s]) ? exSaved.setsData[s] : { weight: '', reps: '', done: false };
+                        setsHtml += `
+                            <div class="flex items-center gap-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                                <span class="w-12 font-bold text-slate-500">Serie ${s + 1}</span>
+                                <div class="flex-1 grid grid-cols-2 gap-2">
+                                    <div class="flex items-center space-x-1 bg-white px-2 py-1 rounded-lg border">
+                                        <input type="number" step="0.5" placeholder="0" value="${setSaved.weight}" data-ex="${exIdx}" data-set="${s}" data-field="weight" class="w-full bg-transparent font-bold text-center focus:outline-none">
+                                        <span class="text-[10px] text-slate-400">kg</span>
+                                    </div>
+                                    <div class="flex items-center space-x-1 bg-white px-2 py-1 rounded-lg border">
+                                        <input type="text" placeholder="${ex.baseReps}" value="${setSaved.reps}" data-ex="${exIdx}" data-set="${s}" data-field="reps" class="w-full bg-transparent font-bold text-center focus:outline-none">
+                                        <span class="text-[10px] text-slate-400">reps</span>
+                                    </div>
+                                </div>
+                                <button onclick="triggerSetComplete(this, ${ex.restSecs || 120})" class="no-print px-2.5 py-1.5 rounded-lg font-bold border transition ${setSaved.done ? 'bg-red-600 border-red-600 text-white' : 'bg-white border-slate-200 text-slate-600'}">
+                                    ${setSaved.done ? 'Completada' : 'Terminar'}
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
+
+                exCard.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-base">${ex.name}</h4>
+                            <p class="text-xs text-slate-500">${ex.note || ''}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            ${reorderHtml}
+                            <span class="text-xs bg-slate-100 text-red-700 font-mono px-2 py-1 rounded border font-bold">${totalSets} × ${ex.baseReps}</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2">${setsHtml}</div>
+                `;
+                container.appendChild(exCard);
+            });
+
+            document.getElementById('daily-steps-input').value = savedSession ? (savedSession.steps || '') : '';
+            document.getElementById('daily-calories-input').value = savedSession ? (savedSession.calories || '') : '';
+            document.getElementById('daily-cardio-input').value = savedSession ? (savedSession.cardio || '') : '';
+            document.getElementById('daily-notes-input').value = savedSession ? (savedSession.notes || '') : '';
+            lucide.createIcons();
+        }
+
+        function moveExercise(exIdx, direction) {
+            const routine = getRoutineForDate(currentActiveDate);
+            let savedSession = getSavedSession(currentActiveDate);
+            let exercisesList = savedSession && savedSession.exercisesDefinition ? savedSession.exercisesDefinition : [...routine.exercises];
+            const targetIdx = exIdx + direction;
+            if (targetIdx < 0 || targetIdx >= exercisesList.length) return;
+            const temp = exercisesList[exIdx];
+            exercisesList[exIdx] = exercisesList[targetIdx];
+            exercisesList[targetIdx] = temp;
+            if (!savedSession) savedSession = { date: currentActiveDate, routineId: routine.id };
+            savedSession.exercisesDefinition = exercisesList;
+            const all = getAllSavedSessions();
+            all[currentActiveDate] = savedSession;
+            localStorage.setItem(STORAGE_KEY_WORKOUTS, JSON.stringify(all));
+            loadDailyView(currentActiveDate);
+        }
+
+        function showAlternatives(exIdx, exerciseName) {
+            const found = EXERCISE_BANK.find(e => e.name === exerciseName);
+            const modal = document.getElementById('exercise-alternatives-modal');
+            const content = document.getElementById('alt-modal-content');
+            document.getElementById('alt-modal-title').innerText = `Alternativas para: ${exerciseName}`;
+            modal.classList.remove('hidden');
+
+            let altList = (found && found.alternatives) ? found.alternatives : [];
+            let html = `
+                <div onclick="selectAlternativeExercise(${exIdx}, '${exerciseName.replace(/'/g, "\\'")}')" class="p-3 bg-slate-50 hover:bg-red-50 hover:border-red-500 border border-slate-200 rounded-xl cursor-pointer transition flex items-center justify-between">
+                    <span class="font-bold text-slate-900">• ${exerciseName} (Actual)</span>
+                    <span class="text-[11px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">Mantener</span>
+                </div>
+            `;
+
+            if (altList.length === 0) {
+                html += `<p class="text-xs text-slate-400 italic p-2">No hay variantes alternativas registradas para este ejercicio.</p>`;
+            } else {
+                altList.forEach(altName => {
+                    html += `
+                        <div onclick="selectAlternativeExercise(${exIdx}, '${altName.replace(/'/g, "\\'")}')" class="p-3 bg-slate-50 hover:bg-amber-50 hover:border-amber-500 border border-slate-200 rounded-xl cursor-pointer transition flex items-center justify-between">
+                            <span class="font-bold text-slate-800">• ${altName}</span>
+                            <span class="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">Seleccionar</span>
+                        </div>
+                    `;
+                });
+            }
+            content.innerHTML = html;
+        }
+
+        function selectAlternativeExercise(exIdx, newName) {
+            const routine = getRoutineForDate(currentActiveDate);
+            let savedSession = getSavedSession(currentActiveDate);
+            let exercisesList = savedSession && savedSession.exercisesDefinition ? savedSession.exercisesDefinition : [...routine.exercises];
+
+            if (exercisesList[exIdx]) {
+                const bankMatch = EXERCISE_BANK.find(e => e.name === newName);
+                exercisesList[exIdx].name = newName;
+                if (bankMatch) {
+                    exercisesList[exIdx].note = bankMatch.target;
+                    exercisesList[exIdx].isDouble = bankMatch.isDouble || false;
+                    exercisesList[exIdx].subExercises = bankMatch.subExercises || null;
+                } else {
+                    exercisesList[exIdx].note = 'Variante personalizada';
+                    exercisesList[exIdx].isDouble = false;
+                    exercisesList[exIdx].subExercises = null;
+                }
+            }
+
+            if (!savedSession) savedSession = { date: currentActiveDate, routineId: routine.id };
+            savedSession.exercisesDefinition = exercisesList;
+            
+            if (savedSession.exercises && savedSession.exercises[exIdx]) {
+                savedSession.exercises[exIdx].baseName = newName;
+                savedSession.exercises[exIdx].setsData = [];
+            }
+
+            const all = getAllSavedSessions();
+            all[currentActiveDate] = savedSession;
+            localStorage.setItem(STORAGE_KEY_WORKOUTS, JSON.stringify(all));
+
+            closeAlternativesModal();
+            loadDailyView(currentActiveDate);
+            showToast(`Ejercicio cambiado a: ${newName}`, 'success');
+        }
+
+        function closeAlternativesModal() { document.getElementById('exercise-alternatives-modal').classList.add('hidden'); }
+
+        let activeBankCategory = 'all';
+        function renderExerciseBank() {
+            const container = document.getElementById('exercise-bank-grid');
+            const searchVal = (document.getElementById('bank-search-input').value || '').toLowerCase();
+            container.innerHTML = '';
+            EXERCISE_BANK.filter(ex => (activeBankCategory === 'all' || ex.category === activeBankCategory) && (ex.name.toLowerCase().includes(searchVal) || ex.target.toLowerCase().includes(searchVal))).forEach(ex => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 hover:border-red-500 transition";
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <h4 class="font-bold text-sm text-slate-900">${ex.name}</h4>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase bg-red-100 text-red-700">${ex.category}</span>
+                    </div>
+                    <p class="text-xs text-red-600 font-semibold">Foco: ${ex.target}</p>
+                    <p class="text-xs text-slate-600">${ex.tip}</p>
+                    <button onclick="showAlternativesModalOnly('${ex.name}')" class="mt-2 text-[11px] font-bold text-amber-700 hover:underline flex items-center space-x-1"><i data-lucide="git-branch" class="w-3 h-3"></i><span>Ver alternativas similares</span></button>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function showAlternativesModalOnly(exerciseName) {
+            const found = EXERCISE_BANK.find(e => e.name === exerciseName);
+            const modal = document.getElementById('exercise-alternatives-modal');
+            const content = document.getElementById('alt-modal-content');
+            document.getElementById('alt-modal-title').innerText = `Alternativas para: ${exerciseName}`;
+            modal.classList.remove('hidden');
+            if (found && found.alternatives) {
+                content.innerHTML = found.alternatives.map(a => `<div class="p-2.5 bg-slate-50 rounded-lg border font-semibold text-slate-800">• ${a}</div>`).join('');
+            } else {
+                content.innerHTML = `<p class="text-slate-400">No hay alternativas registradas.</p>`;
+            }
+        }
+
+        function filterBankCategory(cat) {
+            activeBankCategory = cat;
+            const btns = document.getElementById('bank-category-filters').children;
+            Array.from(btns).forEach(b => {
+                const isMatch = (cat === 'all' && b.textContent === 'Todos') ||
+                                (cat === 'libre' && b.textContent === 'Peso Libre') ||
+                                (cat === 'maquina' && b.textContent === 'Máquinas') ||
+                                (cat === 'polea' && b.textContent === 'Poleas') ||
+                                (cat === 'combinado' && b.textContent.includes('Dobles'));
+                b.className = isMatch
+                    ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-600 text-white transition"
+                    : "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
+            });
+            renderExerciseBank();
+        }
+        function filterExerciseBank() { renderExerciseBank(); }
+
+        function openManualAddExerciseModal() {
+            document.getElementById('manual-exercise-modal').classList.remove('hidden');
+        }
+        function closeManualAddExerciseModal() {
+            document.getElementById('manual-exercise-modal').classList.add('hidden');
+        }
+        function saveManualExercise() {
+            const name = document.getElementById('manual-ex-name').value;
+            const category = document.getElementById('manual-ex-cat').value;
+            const target = document.getElementById('manual-ex-target').value;
+            const tip = document.getElementById('manual-ex-tip').value;
+            const altsInput = document.getElementById('manual-ex-alts').value;
+
+            if (!name || !target) {
+                showToast('Introduce al menos el nombre y el grupo muscular.', 'error');
+                return;
+            }
+
+            const alternatives = altsInput ? altsInput.split(',').map(s => s.trim()).filter(Boolean) : [];
+            const newEx = {
+                id: 'custom_ex_' + Date.now(),
+                name,
+                category,
+                target,
+                tip: tip || 'Sin notas específicas.',
+                alternatives
+            };
+
+            EXERCISE_BANK.push(newEx);
+
+            let userBank = [];
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY_USER_BANK);
+                if (raw) userBank = JSON.parse(raw);
+            } catch(e){}
+            userBank.push(newEx);
+            localStorage.setItem(STORAGE_KEY_USER_BANK, JSON.stringify(userBank));
+
+            closeManualAddExerciseModal();
+            renderExerciseBank();
+            showToast(`¡Ejercicio "${name}" añadido al Banco Pro!`, 'success');
+
+            document.getElementById('manual-ex-name').value = '';
+            document.getElementById('manual-ex-target').value = '';
+            document.getElementById('manual-ex-tip').value = '';
+            document.getElementById('manual-ex-alts').value = '';
+        }
+
+        function openSmartRecommendationModal() {
+            const modal = document.getElementById('smart-recommendation-modal');
+            const body = document.getElementById('smart-recommendation-body');
+            modal.classList.remove('hidden');
+
+            const metrics = getAllMetrics();
+            const lastMetric = metrics[metrics.length - 1] || { weight: 80, waist: 88 };
+            
+            body.innerHTML = `
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-2">
+                    <p class="font-bold text-amber-900">Análisis Antropométrico & Historial:</p>
+                    <p class="text-xs">Peso actual registrado: <strong>${lastMetric.weight} kg</strong> | Cintura: <strong>${lastMetric.waist || '--'} cm</strong>.</p>
+                    <p class="text-xs text-slate-700">La IA recomienda para tu próxima rutina personalizada:</p>
+                    <ul class="list-disc list-inside space-y-1 text-xs font-semibold text-slate-900">
+                        <li>Subir +2.5 kg en Press Inclinado (RIR 1-2).</li>
+                        <li>Incrementar 1 repetición en dominadas / jalón neutro.</li>
+                        <li>Mantener el volumen de pierna en 2 series pesadas.</li>
+                    </ul>
+                </div>
+                <button onclick="applySmartRoutine()" class="w-full py-2.5 bg-red-600 text-white font-bold rounded-xl text-xs">Crear Rutina basada en esta recomendación</button>
+            `;
+        }
+        function closeSmartRecommendationModal() { document.getElementById('smart-recommendation-modal').classList.add('hidden'); }
+
+        function applySmartRoutine() {
+            const title = "Rutina Optimizada IA (Progresión Ares)";
+            const desc = "Basada en tus últimos pesos";
+            const selectedExercises = [
+                { name: 'Press Inclinado Mancuernas (30º)', baseSets: 3, baseReps: '8', baseRir: 'RIR 1', restSecs: 180, note: '+2.5kg progresión' },
+                { name: 'Jalón al Pecho Agarre Neutro', baseSets: 3, baseReps: '10', baseRir: 'RIR 1', restSecs: 120, note: 'Foco densidad' },
+                { name: 'Elevaciones Laterales con Mancuerna / Polea', baseSets: 4, baseReps: '15', baseRir: 'RIR 0-1', restSecs: 90, note: 'Deltoides máximo' }
+            ];
+            const customRoutines = getAllCustomRoutines();
+            customRoutines.push({ id: 'smart_' + Date.now(), title, desc, exercises: selectedExercises });
+            localStorage.setItem(STORAGE_KEY_CUSTOM_ROUTINES, JSON.stringify(customRoutines));
+            closeSmartRecommendationModal();
+            renderCustomRoutines();
+            showToast('¡Rutina inteligente creada con éxito!', 'success');
+        }
+
+        /* CRONÓMETRO ROBUSTO Y ALARMA */
+        function toggleGlobalWorkout() {
+            if (isWorkoutRunning) {
+                clearInterval(globalTimerInterval);
+                globalTimerInterval = null;
+                globalTimerElapsedBeforePause += Math.floor((Date.now() - globalTimerStartTimestamp) / 1000);
+                isWorkoutRunning = false;
+                updateWorkoutButtonsState(false);
+            } else {
+                globalTimerStartTimestamp = Date.now();
+                isWorkoutRunning = true;
+                globalTimerInterval = setInterval(updateGlobalTimerDisplay, 500);
+                updateWorkoutButtonsState(true);
+            }
+        }
+
+        function resetGlobalWorkout() {
+            clearInterval(globalTimerInterval);
+            globalTimerInterval = null;
+            isWorkoutRunning = false;
+            globalTimerElapsedBeforePause = 0;
+            globalTimerStartTimestamp = 0;
+            updateGlobalTimerDisplay();
+            updateWorkoutButtonsState(false);
+        }
+
+        function updateGlobalTimerDisplay() {
+            let totalSeconds = globalTimerElapsedBeforePause;
+            if (isWorkoutRunning) totalSeconds += Math.floor((Date.now() - globalTimerStartTimestamp) / 1000);
+            const hrs = Math.floor(totalSeconds / 3600);
+            const mins = Math.floor((totalSeconds % 3600) / 60);
+            const secs = totalSeconds % 60;
+            const formatted = `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('global-timer-display').innerText = formatted;
+            document.getElementById('floating-global-timer').innerText = formatted;
+        }
+
+        function updateWorkoutButtonsState(running) {
+            document.getElementById('btn-toggle-workout-text').innerText = running ? 'Pausar' : 'Comenzar';
+            document.getElementById('floating-btn-text').innerText = running ? 'Pausar' : 'Comenzar';
+        }
+
+        function triggerSetComplete(btn, restSeconds = 120) {
+            if (!isWorkoutRunning) toggleGlobalWorkout();
+            const isDone = btn.classList.contains('bg-red-600');
+            if (isDone) {
+                btn.classList.remove('bg-red-600', 'border-red-600', 'text-white');
+                btn.classList.add('bg-white', 'border-slate-200', 'text-slate-600');
+                btn.innerText = 'Terminar';
+            } else {
+                btn.classList.add('bg-red-600', 'border-red-600', 'text-white');
+                btn.classList.remove('bg-white', 'border-slate-200', 'text-slate-600');
+                btn.innerText = 'Completada';
+            }
+            startRestCountdown(restSeconds);
+        }
+
+        function startRestCountdown(seconds) {
+            clearInterval(restTimerInterval);
+            restTimerTargetTimestamp = Date.now() + (seconds * 1000);
+            restTimerSecondsRemaining = seconds;
+            document.getElementById('rest-indicator-badge').classList.remove('hidden');
+            updateRestTimerDisplays();
+
+            restTimerInterval = setInterval(() => {
+                const remaining = Math.round((restTimerTargetTimestamp - Date.now()) / 1000);
+                if (remaining <= 0) finishRestTimer();
+                else { restTimerSecondsRemaining = remaining; updateRestTimerDisplays(); }
+            }, 500);
+        }
+
+        function finishRestTimer() {
+            clearInterval(restTimerInterval);
+            restTimerInterval = null;
+            restTimerTargetTimestamp = 0;
+            restTimerSecondsRemaining = 0;
+            document.getElementById('rest-indicator-badge').classList.add('hidden');
+            updateRestTimerDisplays();
+            playBeepSound();
+            showToast('🔔 ¡TIEMPO DE DESCANSO TERMINADO!', 'warning');
+        }
+
+        function updateRestTimerDisplays() {
+            const mins = Math.floor(Math.max(0, restTimerSecondsRemaining) / 60);
+            const secs = Math.max(0, restTimerSecondsRemaining) % 60;
+            const formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('rest-timer-display').innerText = formatted;
+            document.getElementById('floating-rest-timer').innerText = formatted;
+        }
+
+        function playBeepSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const playTone = (freq, start, dur) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, start);
+                    gain.gain.setValueAtTime(0.5, start);
+                    gain.gain.exponentialRampToValueAtTime(0.01, start + dur);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(start);
+                    osc.stop(start + dur);
+                };
+                const now = audioCtx.currentTime;
+                playTone(900, now, 0.2);
+                playTone(1200, now + 0.25, 0.4);
+            } catch (e) {}
+        }
+
+        /* GUARDADO */
+        function saveCurrentDaySession() {
+            const dateStr = currentActiveDate;
+            const routine = getRoutineForDate(dateStr);
+            const savedSession = getSavedSession(dateStr);
+            const exercisesList = (savedSession && savedSession.exercisesDefinition) ? savedSession.exercisesDefinition : routine.exercises;
+
+            const exercisesData = [];
+            const exCards = document.getElementById('daily-exercises-list').children;
+
+            Array.from(exCards).forEach((card, exIdx) => {
+                const exDef = exercisesList[exIdx];
+                if (!exDef) return;
+                const setsData = [];
+                const totalSets = exDef.baseSets || 3;
+
+                for (let s = 0; s < totalSets; s++) {
+                    if (exDef.isDouble) {
+                        setsData.push({
+                            sub1Weight: card.querySelector(`[data-ex="${exIdx}"][data-set="${s}"][data-sub="1"][data-field="weight"]`)?.value || '',
+                            sub1Reps: card.querySelector(`[data-ex="${exIdx}"][data-set="${s}"][data-sub="1"][data-field="reps"]`)?.value || '',
+                            sub2Weight: card.querySelector(`[data-ex="${exIdx}"][data-set="${s}"][data-sub="2"][data-field="weight"]`)?.value || '',
+                            sub2Reps: card.querySelector(`[data-ex="${exIdx}"][data-set="${s}"][data-sub="2"][data-field="reps"]`)?.value || '',
+                            done: card.querySelectorAll('button')[3]?.classList.contains('bg-red-600') || false
+                        });
+                    } else {
+                        setsData.push({
+                            weight: card.querySelector(`[data-ex="${exIdx}"][data-set="${s}"][data-field="weight"]`)?.value || '',
+                            reps: card.querySelector(`[data-ex="${exIdx}"][data-set="${s}"][data-field="reps"]`)?.value || '',
+                            done: card.querySelectorAll('button')[2]?.classList.contains('bg-red-600') || false
+                        });
+                    }
+                }
+                exercisesData.push({ baseName: exDef.name, isDouble: exDef.isDouble || false, subExercises: exDef.subExercises || null, setsData });
+            });
+
+            let totalSeconds = globalTimerElapsedBeforePause;
+            if (isWorkoutRunning) totalSeconds += Math.floor((Date.now() - globalTimerStartTimestamp) / 1000);
+
+            const sessionObj = {
+                date: dateStr,
+                routineId: routine.id,
+                routineTitle: routine.title,
+                exercisesDefinition: exercisesList,
+                exercises: exercisesData,
+                steps: document.getElementById('daily-steps-input').value,
+                calories: document.getElementById('daily-calories-input').value,
+                cardio: document.getElementById('daily-cardio-input').value,
+                notes: document.getElementById('daily-notes-input').value,
+                durationSeconds: totalSeconds,
+                savedAt: new Date().toISOString()
+            };
+
+            const all = getAllSavedSessions();
+            all[dateStr] = sessionObj;
+            localStorage.setItem(STORAGE_KEY_WORKOUTS, JSON.stringify(all));
+            showToast('¡Entrenamiento guardado con éxito!', 'success');
+            loadDailyView(dateStr);
+            renderCalendarView();
+        }
+
+        function getSavedSession(dateStr) { return getAllSavedSessions()[dateStr] || null; }
+        function getAllSavedSessions() {
+            const raw = localStorage.getItem(STORAGE_KEY_WORKOUTS);
+            return raw ? JSON.parse(raw) : {};
+        }
+
+        /* RUTINAS PERSONALIZADAS */
+        function openCustomRoutineModal() {
+            document.getElementById('custom-routine-modal').classList.remove('hidden');
+            const list = document.getElementById('modal-bank-selection-list');
+            list.innerHTML = '';
+            EXERCISE_BANK.forEach(ex => {
+                list.innerHTML += `<label class="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer"><input type="checkbox" value="${ex.name}" class="custom-routine-checkbox rounded text-red-600"><span>${ex.name} (${ex.target})</span></label>`;
+            });
+        }
+        function closeCustomRoutineModal() { document.getElementById('custom-routine-modal').classList.add('hidden'); }
+
+        function saveCustomRoutine() {
+            const title = document.getElementById('new-routine-title').value;
+            const desc = document.getElementById('new-routine-desc').value;
+            const checked = document.querySelectorAll('.custom-routine-checkbox:checked');
+            if (!title || checked.length === 0) { showToast('Introduce título y selecciona ejercicios', 'error'); return; }
+
+            const exercises = Array.from(checked).map(cb => {
+                const item = EXERCISE_BANK.find(e => e.name === cb.value);
+                return { name: cb.value, baseSets: 3, baseReps: '10', baseRir: 'RIR 1', restSecs: 90, note: item ? item.target : '', isDouble: item ? item.isDouble : false, subExercises: item ? item.subExercises : null };
+            });
+
+            const custom = getAllCustomRoutines();
+            custom.push({ id: 'cust_' + Date.now(), title, desc, exercises });
+            localStorage.setItem(STORAGE_KEY_CUSTOM_ROUTINES, JSON.stringify(custom));
+            closeCustomRoutineModal();
+            renderCustomRoutines();
+            showToast('Rutina creada', 'success');
+        }
+
+        function getAllCustomRoutines() {
+            const raw = localStorage.getItem(STORAGE_KEY_CUSTOM_ROUTINES);
+            return raw ? JSON.parse(raw) : [];
+        }
+
+        function renderCustomRoutines() {
+            const container = document.getElementById('custom-routines-container');
+            const routines = getAllCustomRoutines();
+            container.innerHTML = '';
+            if (routines.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 italic">Sin rutinas creadas.</p>`; return; }
+            routines.forEach((r, idx) => {
+                container.innerHTML += `
+                    <div class="bg-slate-50 border rounded-xl p-4 space-y-1">
+                        <div class="flex items-center justify-between"><h4 class="font-bold text-sm text-slate-900">${r.title}</h4><button onclick="deleteCustomRoutine(${idx})" class="text-slate-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>
+                        <p class="text-xs text-slate-600">${r.desc || ''}</p>
+                        <p class="text-[11px] font-semibold text-red-600">${r.exercises.length} ejercicios</p>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+        function deleteCustomRoutine(idx) {
+            const routines = getAllCustomRoutines();
+            routines.splice(idx, 1);
+            localStorage.setItem(STORAGE_KEY_CUSTOM_ROUTINES, JSON.stringify(routines));
+            renderCustomRoutines();
+        }
+
+        /* ================= CALENDARIO ================= */
+        function renderCalendarView() {
+            const monthVal = document.getElementById('calendar-month-selector').value;
+            const [year, month] = monthVal.split('-').map(Number);
+            const grid = document.getElementById('calendar-grid-container');
+            grid.innerHTML = '';
+
+            ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].forEach(d => {
+                grid.innerHTML += `<div class="text-center text-xs font-bold text-slate-400 py-1 uppercase">${d}</div>`;
+            });
+
+            const firstDayIndex = (new Date(year, month - 1, 1).getDay() + 6) % 7;
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const savedSessions = getAllSavedSessions();
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                grid.innerHTML += `<div class="bg-slate-50/50 rounded-xl p-2 min-h-[82px] border border-transparent"></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                const isOutOfRange = (dayStr < '2026-11-23' || dayStr > '2027-01-31');
+                const routine = getRoutineForDate(dayStr);
+                const isSaved = savedSessions[dayStr];
+
+                let borderStyle = "border-slate-200 bg-white";
+                let badgeTextColor = "text-slate-600";
+                if (!isOutOfRange) {
+                    if (routine.id === 'torsoA' || routine.id === 'torsoB') {
+                        borderStyle = "border-red-200 bg-red-50/40";
+                        badgeTextColor = "text-red-700";
+                    } else if (routine.id === 'piernaHombro') {
+                        borderStyle = "border-amber-200 bg-amber-50/40";
+                        badgeTextColor = "text-amber-800";
+                    } else if (routine.id === 'cardio') {
+                        borderStyle = "border-blue-200 bg-blue-50/40";
+                        badgeTextColor = "text-blue-700";
+                    } else if (routine.id === 'crossfit') {
+                        borderStyle = "border-purple-200 bg-purple-50/40";
+                        badgeTextColor = "text-purple-700";
+                    }
+                } else {
+                    borderStyle = "border-slate-100 bg-slate-50 text-slate-300 opacity-45";
+                }
+
+                const cell = document.createElement('div');
+                cell.className = `${borderStyle} border rounded-xl p-2 min-h-[82px] flex flex-col justify-between ${!isOutOfRange ? 'cursor-pointer hover:border-red-600 shadow-sm' : ''} transition group`;
+                if (!isOutOfRange) {
+                    cell.onclick = () => {
+                        currentActiveDate = dayStr;
+                        document.getElementById('daily-date-picker').value = dayStr;
+                        loadDailyView(dayStr);
+                        switchTab('daily');
+                    };
+                }
+                cell.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold ${dayStr === '2026-11-23' ? 'text-red-600 font-extrabold' : 'text-slate-900'}">${day}</span>
+                        ${isSaved ? '<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm" title="Entreno guardado"></span>' : ''}
+                    </div>
+                    <span class="text-[10px] font-bold ${badgeTextColor} group-hover:text-red-600 transition line-clamp-2 leading-tight">${!isOutOfRange ? routine.badge : '-'}</span>
+                `;
+                grid.appendChild(cell);
+            }
+        }
+
+        function printCalendarDirectly() {
+            const monthText = document.getElementById('calendar-month-selector').selectedOptions[0].text;
+            document.getElementById('print-direct-date').innerText = `Calendario: ${monthText} • Generado el ${new Date().toLocaleDateString('es-ES')}`;
+            window.print();
+        }
+
+        /* ================= MÉTRICAS ================= */
+        function submitNewMetric() {
+            const date = document.getElementById('metric-form-date').value;
+            const weight = parseFloat(document.getElementById('metric-form-weight').value);
+
+            if (!date || isNaN(weight) || date < '2026-11-23') {
+                showToast('Ingresa fecha (a partir del 23 nov) y peso obligatoriamente.', 'error');
+                return;
+            }
+
+            const metricItem = {
+                date: date,
+                weight: weight,
+                waist: parseFloat(document.getElementById('metric-form-waist').value) || null,
+                chest: parseFloat(document.getElementById('metric-form-chest').value) || null,
+                back: parseFloat(document.getElementById('metric-form-back').value) || null,
+                shoulders: parseFloat(document.getElementById('metric-form-shoulders').value) || null,
+                biceps: parseFloat(document.getElementById('metric-form-biceps').value) || null,
+                forearm: parseFloat(document.getElementById('metric-form-forearm').value) || null,
+                thigh: parseFloat(document.getElementById('metric-form-thigh').value) || null,
+                calf: parseFloat(document.getElementById('metric-form-calf').value) || null,
+                hips: parseFloat(document.getElementById('metric-form-hips').value) || null,
+                notes: document.getElementById('metric-form-notes').value || ''
+            };
+
+            const metrics = getAllMetrics();
+            const existingIdx = metrics.findIndex(m => m.date === date);
+            if (existingIdx >= 0) metrics.splice(existingIdx, 1);
+
+            metrics.push(metricItem);
+            metrics.sort((a, b) => new Date(a.date) - new Date(b.date));
+            localStorage.setItem(STORAGE_KEY_METRICS, JSON.stringify(metrics));
+
+            ['weight', 'waist', 'chest', 'back', 'shoulders', 'biceps', 'forearm', 'thigh', 'calf', 'hips', 'notes'].forEach(id => {
+                const el = document.getElementById(`metric-form-${id}`);
+                if (el) el.value = '';
+            });
+
+            showToast('Mediciones guardadas con éxito.', 'success');
+            renderMetricsTable();
+            updateProgressChart();
+        }
+
+        function deleteMetric(index) {
+            const metrics = getAllMetrics();
+            metrics.splice(index, 1);
+            localStorage.setItem(STORAGE_KEY_METRICS, JSON.stringify(metrics));
+            renderMetricsTable();
+            updateProgressChart();
+            showToast('Registro eliminado.', 'info');
+        }
+
+        function getAllMetrics() {
+            const raw = localStorage.getItem(STORAGE_KEY_METRICS);
+            return raw ? JSON.parse(raw) : [
+                { date: '2026-11-23', weight: 79.6, waist: 87.0, chest: 104.0, back: 112.0, shoulders: 118.0, biceps: 38.0, forearm: 30.0, thigh: 60.0, calf: 37.0, hips: 96.0, notes: 'Inicio Proyecto Ares' }
+            ];
+        }
+
+        function renderMetricsTable() {
+            const metrics = getAllMetrics();
+            const tbody = document.getElementById('metrics-table-body');
+            tbody.innerHTML = '';
+
+            if (metrics.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-xs text-slate-400">Sin registros de mediciones</td></tr>`;
+                return;
+            }
+
+            metrics.forEach((m, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="py-2.5 px-2 font-mono text-xs font-semibold text-slate-700">${m.date}</td>
+                    <td class="py-2.5 px-2 font-bold text-slate-900">${m.weight ? m.weight.toFixed(1) + ' kg' : '--'}</td>
+                    <td class="py-2.5 px-2 font-semibold text-amber-700">${m.waist ? m.waist.toFixed(1) + ' cm' : '--'}</td>
+                    <td class="py-2.5 px-2 text-slate-700">${m.chest ? m.chest.toFixed(1) + ' cm' : '--'}</td>
+                    <td class="py-2.5 px-2 text-slate-700">${m.back ? m.back.toFixed(1) + ' cm' : '--'}</td>
+                    <td class="py-2.5 px-2 text-slate-700">${m.shoulders ? m.shoulders.toFixed(1) + ' cm' : '--'}</td>
+                    <td class="py-2.5 px-2 text-slate-700">${m.biceps ? m.biceps.toFixed(1) + ' cm' : '--'}</td>
+                    <td class="py-2.5 px-2 text-slate-700">${m.thigh ? m.thigh.toFixed(1) + ' cm' : '--'}</td>
+                    <td class="py-2.5 px-2 text-right no-print">
+                        <button onclick="deleteMetric(${idx})" class="text-slate-400 hover:text-red-600 transition" title="Eliminar">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            progressChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Evolución',
+                        data: [],
+                        borderColor: '#DC2626',
+                        backgroundColor: 'rgba(220, 38, 38, 0.08)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#DC2626',
+                        pointRadius: 5,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { grid: { display: false } }, y: { grid: { color: '#E2E8F0' } } }
+                }
+            });
+            updateProgressChart();
+        }
+
+        function updateProgressChart() {
+            if (!progressChartInstance) return;
+            const metricKey = document.getElementById('chart-metric-selector').value;
+            const metrics = getAllMetrics();
+            const labels = metrics.map(m => m.date);
+            const dataValues = metrics.map(m => m[metricKey] || null);
+
+            const metricLabelsMap = {
+                weight: 'Peso Corporal (kg)', waist: 'Cintura / Abdomen (cm)', chest: 'Pecho / Tórax (cm)',
+                back: 'Espalda (cm)', shoulders: 'Hombros (cm)', biceps: 'Brazo / Bíceps (cm)',
+                forearm: 'Antebrazo (cm)', thigh: 'Muslo / Cuádriceps (cm)', calf: 'Gemelo (cm)', hips: 'Cadera / Glúteo (cm)'
+            };
+
+            progressChartInstance.data.labels = labels;
+            progressChartInstance.data.datasets[0].label = metricLabelsMap[metricKey];
+            progressChartInstance.data.datasets[0].data = dataValues;
+
+            if (metricKey === 'waist') {
+                progressChartInstance.data.datasets[0].borderColor = '#D97706';
+                progressChartInstance.data.datasets[0].backgroundColor = 'rgba(217, 119, 6, 0.08)';
+                progressChartInstance.data.datasets[0].pointBackgroundColor = '#D97706';
+            } else {
+                progressChartInstance.data.datasets[0].borderColor = '#DC2626';
+                progressChartInstance.data.datasets[0].backgroundColor = 'rgba(220, 38, 38, 0.08)';
+                progressChartInstance.data.datasets[0].pointBackgroundColor = '#DC2626';
+            }
+            progressChartInstance.update();
+        }
+
+        /* ================= INFORMES Y DESCARGA ================= */
+        let currentReportTitle = "Informe_Ares";
+
+        function openReportModal(reportType) {
+            const modal = document.getElementById('print-report-modal');
+            const controlsContainer = document.getElementById('report-period-controls');
+            modal.classList.remove('hidden');
+
+            if (reportType === 'custom') {
+                controlsContainer.innerHTML = `
+                    <div class="flex flex-wrap items-center gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                        <span class="text-[11px] font-bold text-slate-600 pl-1">Desde:</span>
+                        <input type="date" id="custom-report-start" value="2026-11-23" min="2026-11-23" onchange="renderCustomRangeReport()" class="bg-white border border-slate-300 text-slate-900 text-xs font-bold rounded-lg px-2 py-1">
+                        <span class="text-[11px] font-bold text-slate-600">Hasta:</span>
+                        <input type="date" id="custom-report-end" value="2027-01-31" min="2026-11-23" onchange="renderCustomRangeReport()" class="bg-white border border-slate-300 text-slate-900 text-xs font-bold rounded-lg px-2 py-1">
+                    </div>
+                `;
+                renderCustomRangeReport();
+            } else if (reportType === 'weekly') {
+                const weeks = generateWeeksList();
+                const optionsHtml = weeks.map((w, idx) => 
+                    `<option value="${w.start}|${w.end}">Semana ${idx + 1} (${w.start} al ${w.end})</option>`
+                ).join('');
+                controlsContainer.innerHTML = `
+                    <select id="report-week-select" onchange="renderWeeklyReport(this.value)" class="bg-slate-50 border border-slate-300 text-slate-900 text-xs font-bold rounded-lg px-2.5 py-1.5">
+                        ${optionsHtml}
+                    </select>
+                `;
+                renderWeeklyReport(weeks[0].start + '|' + weeks[0].end);
+            } else if (reportType === 'monthly') {
+                const currentMonth = document.getElementById('calendar-month-selector').value || '2026-11';
+                controlsContainer.innerHTML = `
+                    <select id="report-month-select" onchange="renderMonthlyReport(this.value)" class="bg-slate-50 border border-slate-300 text-slate-900 text-xs font-bold rounded-lg px-2.5 py-1.5">
+                        <option value="2026-11" ${currentMonth === '2026-11' ? 'selected' : ''}>Noviembre 2026</option>
+                        <option value="2026-12" ${currentMonth === '2026-12' ? 'selected' : ''}>Diciembre 2026</option>
+                        <option value="2027-01" ${currentMonth === '2027-01' ? 'selected' : ''}>Enero 2027</option>
+                    </select>
+                `;
+                renderMonthlyReport(currentMonth);
+            } else {
+                controlsContainer.innerHTML = `<span class="text-xs font-bold text-slate-500">23 Nov 2026 – 31 Ene 2027</span>`;
+                renderFullTimelineReport();
+            }
+            lucide.createIcons();
+        }
+
+        function closeReportModal() { document.getElementById('print-report-modal').classList.add('hidden'); }
+        function executeReportPrint() { window.print(); }
+
+        function generateWeeksList() {
+            const list = [];
+            let curr = new Date('2026-11-23T00:00:00');
+            const endLimit = new Date('2027-01-31T00:00:00');
+            while (curr <= endLimit) {
+                const startStr = curr.toISOString().split('T')[0];
+                const endObj = new Date(curr);
+                endObj.setDate(endObj.getDate() + 6);
+                const endStr = (endObj > endLimit ? endLimit : endObj).toISOString().split('T')[0];
+                list.push({ start: startStr, end: endStr });
+                curr.setDate(curr.getDate() + 7);
+            }
+            return list;
+        }
+
+        function renderCustomRangeReport() {
+            const startStr = document.getElementById('custom-report-start').value || '2026-11-23';
+            const endStr = document.getElementById('custom-report-end').value || '2027-01-31';
+            currentReportTitle = `Informe_Ares_${startStr}_a_${endStr}`;
+            const sessions = Object.values(getAllSavedSessions()).filter(s => s.date >= startStr && s.date <= endStr).sort((a,b) => a.date.localeCompare(b.date));
+            const metrics = getAllMetrics().filter(m => m.date >= startStr && m.date <= endStr).sort((a,b) => a.date.localeCompare(b.date));
+            document.getElementById('report-body-container').innerHTML = buildReportHTML({
+                title: `INFORME PERSONALIZADO DE PROGRESO`,
+                subtitle: `Periodo seleccionado libremente: Del ${startStr} al ${endStr}`,
+                sessions,
+                metrics,
+                showFullComparison: metrics.length >= 2
+            });
+        }
+
+        function renderWeeklyReport(rangeStr) {
+            const [startStr, endStr] = rangeStr.split('|');
+            currentReportTitle = `Informe_Semanal_${startStr}_${endStr}`;
+            const sessions = Object.values(getAllSavedSessions()).filter(s => s.date >= startStr && s.date <= endStr).sort((a,b) => a.date.localeCompare(b.date));
+            const metrics = getAllMetrics().filter(m => m.date >= startStr && m.date <= endStr);
+            document.getElementById('report-body-container').innerHTML = buildReportHTML({
+                title: `INFORME SEMANAL DE ENTRENAMIENTO Y MÉTRICAS`,
+                subtitle: `Periodo analizado: Del ${startStr} al ${endStr}`,
+                sessions,
+                metrics,
+                showFullComparison: false
+            });
+        }
+
+        function renderMonthlyReport(monthPrefix) {
+            const monthNames = { '2026-11': 'Noviembre 2026', '2026-12': 'Diciembre 2026', '2027-01': 'Enero 2027' };
+            currentReportTitle = `Informe_Mensual_${monthPrefix}`;
+            const sessions = Object.values(getAllSavedSessions()).filter(s => s.date.startsWith(monthPrefix)).sort((a,b) => a.date.localeCompare(b.date));
+            const metrics = getAllMetrics().filter(m => m.date.startsWith(monthPrefix));
+            document.getElementById('report-body-container').innerHTML = buildReportHTML({
+                title: `INFORME MENSUAL • ${(monthNames[monthPrefix] || monthPrefix).toUpperCase()}`,
+                subtitle: `Resumen consolidado de cargas, volumen y antropometría`,
+                sessions,
+                metrics,
+                showFullComparison: false
+            });
+        }
+
+        function renderFullTimelineReport() {
+            currentReportTitle = `Temporalizacion_Completa_Ares`;
+            const sessions = Object.values(getAllSavedSessions()).sort((a,b) => a.date.localeCompare(b.date));
+            const metrics = getAllMetrics().sort((a,b) => a.date.localeCompare(b.date));
+            document.getElementById('report-body-container').innerHTML = buildReportHTML({
+                title: `TEMPORALIZACIÓN COMPLETA • PROYECTO ARES`,
+                subtitle: `Dossier maestro del mesociclo (Desde 23 Noviembre 2026)`,
+                sessions,
+                metrics,
+                showFullComparison: true
+            });
+        }
+
+        function buildReportHTML({ title, subtitle, sessions, metrics, showFullComparison }) {
+            const totalSessions = sessions.length;
+            const totalSteps = sessions.reduce((acc, s) => acc + (parseInt(s.steps, 10) || 0), 0);
+            const totalKcal = sessions.reduce((acc, s) => acc + (parseInt(s.calories, 10) || 0), 0);
+            const totalMinutes = Math.round(sessions.reduce((acc, s) => acc + (s.durationSeconds || 0), 0) / 60);
+
+            let deltaHtml = '';
+            if (showFullComparison && metrics.length >= 2) {
+                const first = metrics[0];
+                const last = metrics[metrics.length - 1];
+                const calcDiff = (a, b, unit) => {
+                    if (a == null || b == null) return '--';
+                    const d = (b - a).toFixed(1);
+                    return (d > 0 ? `+${d}` : d) + ' ' + unit;
+                };
+                deltaHtml = `
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
+                        <h4 class="text-xs font-extrabold uppercase text-amber-900">Balance Antropométrico (${first.date} ➔ ${last.date})</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+                            <div class="bg-white p-2.5 rounded-lg border border-amber-200">
+                                <span class="text-slate-500 block text-[10px]">Peso Corporal</span>
+                                <span class="font-bold text-slate-900">${first.weight} ➔ ${last.weight} kg</span>
+                                <span class="block font-extrabold text-red-600">${calcDiff(first.weight, last.weight, 'kg')}</span>
+                            </div>
+                            <div class="bg-white p-2.5 rounded-lg border border-amber-200">
+                                <span class="text-slate-500 block text-[10px]">Cintura / Abdomen</span>
+                                <span class="font-bold text-slate-900">${first.waist || '-'} ➔ ${last.waist || '-'} cm</span>
+                                <span class="block font-extrabold text-emerald-700">${calcDiff(first.waist, last.waist, 'cm')}</span>
+                            </div>
+                            <div class="bg-white p-2.5 rounded-lg border border-amber-200">
+                                <span class="text-slate-500 block text-[10px]">Pecho / Tórax</span>
+                                <span class="font-bold text-slate-900">${first.chest || '-'} ➔ ${last.chest || '-'} cm</span>
+                                <span class="block font-extrabold text-slate-800">${calcDiff(first.chest, last.chest, 'cm')}</span>
+                            </div>
+                            <div class="bg-white p-2.5 rounded-lg border border-amber-200">
+                                <span class="text-slate-500 block text-[10px]">Espalda</span>
+                                <span class="font-bold text-slate-900">${first.back || '-'} ➔ ${last.back || '-'} cm</span>
+                                <span class="block font-extrabold text-slate-800">${calcDiff(first.back, last.back, 'cm')}</span>
+                            </div>
+                            <div class="bg-white p-2.5 rounded-lg border border-amber-200">
+                                <span class="text-slate-500 block text-[10px]">Bíceps / Brazo</span>
+                                <span class="font-bold text-slate-900">${first.biceps || '-'} ➔ ${last.biceps || '-'} cm</span>
+                                <span class="block font-extrabold text-slate-800">${calcDiff(first.biceps, last.biceps, 'cm')}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            let metricsRowsHtml = metrics.length === 0
+                ? `<tr><td colspan="11" class="py-3 text-center text-slate-400">No hay mediciones registradas en este periodo.</td></tr>`
+                : metrics.map(m => `
+                    <tr class="border-b border-slate-100">
+                        <td class="py-2 px-2 font-mono font-bold">${m.date}</td>
+                        <td class="py-2 px-2 font-bold">${m.weight ? m.weight + ' kg' : '-'}</td>
+                        <td class="py-2 px-2 font-bold text-amber-700">${m.waist ? m.waist + ' cm' : '-'}</td>
+                        <td class="py-2 px-2">${m.chest || '-'}</td>
+                        <td class="py-2 px-2">${m.back || '-'}</td>
+                        <td class="py-2 px-2">${m.shoulders || '-'}</td>
+                        <td class="py-2 px-2">${m.biceps || '-'}</td>
+                        <td class="py-2 px-2">${m.forearm || '-'}</td>
+                        <td class="py-2 px-2">${m.thigh || '-'}</td>
+                        <td class="py-2 px-2">${m.calf || '-'}</td>
+                        <td class="py-2 px-2">${m.hips || '-'}</td>
+                    </tr>
+                `).join('');
+
+            const prMap = {};
+            sessions.forEach(s => {
+                if (!s.exercises) return;
+                s.exercises.forEach(ex => {
+                    if (!ex.setsData) return;
+                    if (ex.isDouble && ex.subExercises) {
+                        ex.setsData.forEach(st => {
+                            const w1 = parseFloat(st.sub1Weight);
+                            if (!isNaN(w1) && w1 > 0) {
+                                const k1 = ex.subExercises[0];
+                                if (!prMap[k1] || w1 > prMap[k1].maxWeight) prMap[k1] = { maxWeight: w1, reps: st.sub1Reps || '-', date: s.date };
+                            }
+                            const w2 = parseFloat(st.sub2Weight);
+                            if (!isNaN(w2) && w2 > 0) {
+                                const k2 = ex.subExercises[1];
+                                if (!prMap[k2] || w2 > prMap[k2].maxWeight) prMap[k2] = { maxWeight: w2, reps: st.sub2Reps || '-', date: s.date };
+                            }
+                        });
+                    } else {
+                        const label = ex.baseName;
+                        ex.setsData.forEach(st => {
+                            const w = parseFloat(st.weight);
+                            if (!isNaN(w) && w > 0) {
+                                if (!prMap[label] || w > prMap[label].maxWeight) {
+                                    prMap[label] = { maxWeight: w, reps: st.reps || '-', date: s.date };
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+            const prKeys = Object.keys(prMap);
+            let prRowsHtml = prKeys.length === 0
+                ? `<tr><td colspan="4" class="py-3 text-center text-slate-400">Aún no hay cargas registradas con peso (kg) en este periodo.</td></tr>`
+                : prKeys.map(exName => `
+                    <tr class="border-b border-slate-100">
+                        <td class="py-2 px-2 font-semibold text-slate-900">${exName}</td>
+                        <td class="py-2 px-2 font-extrabold text-red-600">${prMap[exName].maxWeight} kg</td>
+                        <td class="py-2 px-2">${prMap[exName].reps} reps</td>
+                        <td class="py-2 px-2 font-mono text-slate-500">${prMap[exName].date}</td>
+                    </tr>
+                `).join('');
+
+            let sessionsHtml = sessions.length === 0
+                ? `<p class="text-xs text-slate-400 italic py-2">No hay sesiones guardadas en este intervalo.</p>`
+                : sessions.map(s => {
+                    const exListHtml = (s.exercises || []).map(ex => {
+                        if (ex.isDouble && ex.subExercises) {
+                            const setsStr = (ex.setsData || [])
+                                .filter(st => st.sub1Weight || st.sub1Reps || st.sub2Weight || st.sub2Reps)
+                                .map((st, idx) => `S${idx+1}: [${ex.subExercises[0]}: ${st.sub1Weight || 0}kg×${st.sub1Reps || '-'} | ${ex.subExercises[1]}: ${st.sub2Weight || 0}kg×${st.sub2Reps || '-'}]`)
+                                .join(' ; ');
+                            return setsStr ? `<li class="text-xs text-slate-700"><strong class="text-slate-900">${ex.baseName}:</strong> <span class="font-mono text-[11px]">${setsStr}</span></li>` : '';
+                        } else {
+                            const setsStr = (ex.setsData || [])
+                                .filter(st => st.weight || st.reps)
+                                .map((st, idx) => `S${idx+1}: ${st.weight || 0}kg × ${st.reps || '-'}`)
+                                .join(' | ');
+                            return setsStr ? `<li class="text-xs text-slate-700"><strong class="text-slate-900">${ex.baseName}:</strong> <span class="font-mono text-[11px]">${setsStr}</span></li>` : '';
+                        }
+                    }).filter(Boolean).join('');
+
+                    return `
+                        <div class="border border-slate-200 rounded-xl p-3.5 space-y-1.5 bg-slate-50/50">
+                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-1.5">
+                                <div>
+                                    <span class="font-mono text-xs font-extrabold text-red-600 mr-2">${s.date}</span>
+                                    <span class="font-bold text-xs text-slate-900">${s.routineTitle || getRoutineForDate(s.date).title}</span>
+                                </div>
+                                <div class="text-[11px] font-semibold text-slate-500 space-x-2">
+                                    ${s.steps ? `<span>👣 ${s.steps} pasos</span>` : ''}
+                                    ${s.calories ? `<span>🔥 ${s.calories} kcal</span>` : ''}
+                                </div>
+                            </div>
+                            ${exListHtml ? `<ul class="list-disc list-inside space-y-0.5 pt-1">${exListHtml}</ul>` : ''}
+                            ${s.cardio ? `<p class="text-xs text-blue-800"><strong>Cardio:</strong> ${s.cardio}</p>` : ''}
+                            ${s.notes ? `<p class="text-xs text-slate-600 italic"><strong>Notas:</strong> ${s.notes}</p>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+            return `
+                <div class="border-b-2 border-red-600 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                    <div>
+                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-red-600">Proyecto Ares • Recomposición Corporal</span>
+                        <h2 class="font-display font-extrabold text-xl sm:text-2xl text-slate-900 mt-0.5">${title}</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">${subtitle}</p>
+                    </div>
+                    <div class="text-left sm:text-right text-[11px] text-slate-500">
+                        <p>Fecha emisión: <strong>${new Date().toLocaleDateString('es-ES')}</strong></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                        <span class="text-[10px] font-bold uppercase text-slate-400">Sesiones Registradas</span>
+                        <p class="font-display font-extrabold text-xl text-slate-900 mt-0.5">${totalSessions}</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                        <span class="text-[10px] font-bold uppercase text-slate-400">Pasos Acumulados</span>
+                        <p class="font-display font-extrabold text-xl text-slate-900 mt-0.5">${totalSteps.toLocaleString('es-ES')}</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                        <span class="text-[10px] font-bold uppercase text-slate-400">Gasto Calórico (Kcal)</span>
+                        <p class="font-display font-extrabold text-xl text-red-600 mt-0.5">${totalKcal.toLocaleString('es-ES')} kcal</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                        <span class="text-[10px] font-bold uppercase text-slate-400">Tiempo Activo Total</span>
+                        <p class="font-display font-extrabold text-xl text-slate-900 mt-0.5">${totalMinutes} min</p>
+                    </div>
+                </div>
+
+                ${deltaHtml}
+
+                <div class="space-y-2">
+                    <h3 class="font-display font-bold text-sm uppercase tracking-wider text-slate-800 border-l-4 border-red-600 pl-2.5">1. Evolución Antropométrica y Perímetros (cm / kg)</h3>
+                    <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 text-slate-600 uppercase font-bold text-[10px]">
+                                <tr>
+                                    <th class="py-2 px-2">Fecha</th>
+                                    <th class="py-2 px-2">Peso</th>
+                                    <th class="py-2 px-2">Cintura</th>
+                                    <th class="py-2 px-2">Pecho</th>
+                                    <th class="py-2 px-2">Espalda</th>
+                                    <th class="py-2 px-2">Hombro</th>
+                                    <th class="py-2 px-2">Brazo</th>
+                                    <th class="py-2 px-2">Anteb.</th>
+                                    <th class="py-2 px-2">Muslo</th>
+                                    <th class="py-2 px-2">Gemelo</th>
+                                    <th class="py-2 px-2">Cadera</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">${metricsRowsHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-display font-bold text-sm uppercase tracking-wider text-slate-800 border-l-4 border-amber-500 pl-2.5">2. Récords de Carga por Ejercicio</h3>
+                    <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 text-slate-600 uppercase font-bold text-[10px]">
+                                <tr>
+                                    <th class="py-2 px-2">Ejercicio</th>
+                                    <th class="py-2 px-2">Carga Máxima</th>
+                                    <th class="py-2 px-2">Repeticiones</th>
+                                    <th class="py-2 px-2">Fecha Récord</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">${prRowsHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-display font-bold text-sm uppercase tracking-wider text-slate-800 border-l-4 border-slate-800 pl-2.5">3. Bitácora Detallada de Sesiones</h3>
+                    <div class="space-y-2.5">${sessionsHtml}</div>
+                </div>
+            `;
+        }
+
+        function downloadReportFile() {
+            const reportHtml = document.getElementById('report-body-container').innerHTML;
+            const fullFileContent = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>${currentReportTitle} - Proyecto Ares</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <style>body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 960px; margin: 0 auto; color: #0F172A; }</style>
+</head>
+<body class="space-y-6">
+    ${reportHtml}
+</body>
+</html>`;
+            const blob = new Blob([fullFileContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentReportTitle}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Archivo descargado correctamente', 'success');
+        }
+
+        function showToast(msg, type='success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-3 rounded-xl border text-xs font-bold shadow-lg bg-white ${type==='success'?'border-red-600 text-slate-900':'border-amber-500 text-amber-900'}`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
